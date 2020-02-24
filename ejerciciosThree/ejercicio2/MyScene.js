@@ -34,10 +34,8 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.model = new MyBox(this.gui, "Dimensiones de la Caja");
+    this.model = new MyBox(this.gui, "Controles de la Caja");
     this.add (this.model);
-    this.model = new MyCone(this.gui,"Dimensiones del Cono");
-    this.add(this.model);
   }
   
   createCamera () {
