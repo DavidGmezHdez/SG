@@ -24,18 +24,25 @@ class MyScene extends THREE.Scene {
     this.createCamera ();
     
     // Un suelo 
-    this.createGround ();
+    //this.createGround ();
     
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     this.axis = new THREE.AxesHelper (5);
     this.add (this.axis);
+
+    var cubo = new MyBox(this.gui, "Dimensiones del Cubo");
+    var cono = new MyCone(this.gui,"Dimensiones del Cono");
     
     
     // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.model = new MyBox(this.gui, "Controles de la Caja");
-    this.add (this.model);
+    this.model = cubo;
+    this.add (cubo);
+    
+    this.model = cono;
+    this.add(cono);
+    
   }
   
   createCamera () {
@@ -142,7 +149,15 @@ class MyScene extends THREE.Scene {
     
     return renderer;  
   }
-  
+/*
+  var animate = function(){
+    requestAnimationFrame( animate );
+    cubo.rotation.x += 1;
+    cubo.rotation.y += 1;
+    this.renderer.render(this,this.camera);
+  }
+  animate();
+  */
   getCamera () {
     // En principio se devuelve la única cámara que tenemos
     // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
