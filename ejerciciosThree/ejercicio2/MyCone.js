@@ -8,7 +8,7 @@ class MyCone extends THREE.Object3D {
 
     this.radio = 2;
     this.altura = 5;
-    this.segmentos = 5;
+    this.segmentos = 3;
  
     // Un Mesh se compone de geometría y material
     var coneGeo = new THREE.ConeGeometry(this.radio,this.altura,this.segmentos);
@@ -41,9 +41,9 @@ class MyCone extends THREE.Object3D {
       this.posY = 0.0;
       this.posZ = 0.0;
 
-      this.rad = 2;
-      this.alt = 5;
-      this.seg = 5;
+      this.rad = this.radio;
+      this.alt = this.altura;
+      this.seg = this.segmentos;
     
       
       // Un botón para dejarlo todo en su posición inicial
@@ -70,16 +70,18 @@ class MyCone extends THREE.Object3D {
     // Estas lineas son las que añaden los componentes de la interfaz
     // Las tres cifras indican un valor mínimo, un máximo y el incremento
     // El método   listen()   permite que si se cambia el valor de la variable en código, el deslizador de la interfaz se actualice
-    folder.add (this.guiControls, 'rad', 0.1, 5.0, 0.1).name ('Radio : ').listen()
+    folder.add (this.guiControls, 'radio', 0.1, 5.0, 0.1).name ('Radio : ').listen()
       .onChange(function(rad){
         var coneGeo = new THREE.ConeGeometry(rad,this.altura,this.segmentos);
+        that.cone.radio = rad;
         that.cone.geometry = coneGeo;
       });
       
-    folder.add (this.guiControls, 'sizeY', 0.1, 5.0, 0.1).name ('Altura : ').listen();
-    folder.add (this.guiControls, 'seg', 0.1, 5.0, 0.1).name ('Resolucion : ').listen()
+    folder.add (this.guiControls, 'altura', 0.1, 5.0, 0.1).name ('Altura : ').listen();
+    folder.add (this.guiControls, 'seg', 0.1, 15.0, 0.1).name ('Resolucion : ').listen()
     .onChange(function(seg){
       var coneGeo = new THREE.ConeGeometry(this.radio,this.altura,seg);
+      that.cone.segmentos = seg;
       that.cone.geometry = coneGeo;
     });
     
