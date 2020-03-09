@@ -27,21 +27,24 @@ class MyScene extends THREE.Scene {
     //this.createGround ();
     
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
-    this.axis = new THREE.AxesHelper (5);
-    this.add (this.axis);
+    
+    this.ejesCubo = new THREE.AxesHelper (2);
+    this.cubo = new MyBox(this.gui, "Dimensiones del Cubo");
+    this.add (this.ejesCubo);
+    this.add (this.cubo);
+    this.ejesCubo.position.set(0,0,0);
 
-    var cubo = new MyBox(this.gui, "Dimensiones del Cubo");
-    var cono = new MyCone(this.gui,"Dimensiones del Cono");
-    
-    
-    // Por último creamos el modelo.
-    // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
-    // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.model = cubo;
-    this.add (cubo);
-    
-    this.model = cono;
-    this.add(cono);
+    this.ejesCono = new THREE.AxesHelper (2);
+    this.cono = new MyCone(this.gui,"Dimensiones del Cono");
+    this.add (this.ejesCono);
+    this.add(this.cono);
+    this.ejesCono.position.set(5,0,0);
+
+    this.ejesCil = new THREE.AxesHelper (2);
+    this.cilindro = new MyCylinder(this.gui,"Dimensiones del Cilindro");
+    this.add (this.ejesCil);
+    this.add(this.cilindro);
+    this.ejesCil.position.set(-5,0,0);
     
   }
   
@@ -193,13 +196,16 @@ class MyScene extends THREE.Scene {
     this.spotLight.intensity = this.guiControls.lightIntensity;
     
     // Se muestran o no los ejes según lo que idique la GUI
-    this.axis.visible = this.guiControls.axisOnOff;
+    this.ejesCubo.visible = this.guiControls.axisOnOff;
     
     // Se actualiza la posición de la cámara según su controlador
     this.cameraControl.update();
     
     // Se actualiza el resto del modelo
-    this.model.update();
+    
+    this.cubo.update();
+    this.cono.update();
+    this.cilindro.update();
     
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());

@@ -13,14 +13,14 @@ class MyBox extends THREE.Object3D {
     var boxMat = new THREE.MeshNormalMaterial();
     
     // Ya podemos construir el Mesh
-    var box = new THREE.Mesh (boxGeom, boxMat);
+    this.box = new THREE.Mesh (boxGeom, boxMat);
     // Y añadirlo como hijo del Object3D (el this)
-    this.add (box);
+    this.add (this.box);
     
     // Las geometrías se crean centradas en el origen.
     // Como queremos que el sistema de referencia esté en la base,
     // subimos el Mesh de la caja la mitad de su altura
-    box.position.y = 0.5;
+    this.box.position.y = 0.5;
   }
   
   createGUI (gui,titleGui) {
@@ -79,6 +79,9 @@ class MyBox extends THREE.Object3D {
     this.position.set (this.guiControls.posX,this.guiControls.posY,this.guiControls.posZ);
     this.rotation.set (this.guiControls.rotX,this.guiControls.rotY,this.guiControls.rotZ);
     this.scale.set (this.guiControls.sizeX,this.guiControls.sizeY,this.guiControls.sizeZ);
+
+    this.box.rotation.x += 0.01;
+    this.box.rotation.y += 0.01;
     
   }
 }
