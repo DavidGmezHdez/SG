@@ -45,6 +45,24 @@ class MyScene extends THREE.Scene {
     this.add (this.ejesCil);
     this.add(this.cilindro);
     this.ejesCil.position.set(-5,0,0);
+
+    this.ejesEsf = new THREE.AxesHelper (2);
+    this.esfera = new MySphere(this.gui,"Dimensiones de la Esfera");
+    this.add (this.ejesEsf);
+    this.add(this.esfera);
+    this.ejesEsf.position.set(0,5,0);
+
+    this.ejesTor = new THREE.AxesHelper (2);
+    this.toro = new MyTorus(this.gui,"Dimensiones del Toro");
+    this.add (this.ejesTor);
+    this.add(this.toro);
+    this.ejesTor.position.set(5,5,0);
+
+    this.ejesIco = new THREE.AxesHelper (2);
+    this.icosaedro = new MyIcosahedron(this.gui,"Dimensiones del Icosaedro");
+    this.add (this.ejesIco);
+    this.add(this.icosaedro);
+    this.ejesIco.position.set(-5,5,0);
     
   }
   
@@ -152,15 +170,7 @@ class MyScene extends THREE.Scene {
     
     return renderer;  
   }
-/*
-  var animate = function(){
-    requestAnimationFrame( animate );
-    cubo.rotation.x += 1;
-    cubo.rotation.y += 1;
-    this.renderer.render(this,this.camera);
-  }
-  animate();
-  */
+
   getCamera () {
     // En principio se devuelve la única cámara que tenemos
     // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
@@ -206,6 +216,9 @@ class MyScene extends THREE.Scene {
     this.cubo.update();
     this.cono.update();
     this.cilindro.update();
+    this.esfera.update();
+    this.toro.update();
+    this.icosaedro.update();
     
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());

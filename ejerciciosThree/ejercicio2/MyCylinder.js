@@ -20,25 +20,25 @@ class MyCylinder extends THREE.Object3D {
       // Como queremos que el sistema de referencia esté en la base,
       // subimos el Mesh de la caja la mitad de su altura
       this.cyl.position.y = 0.5;
-      this.cyl.position.x = 5;
+      this.cyl.position.x = -5;
     }
     
     createGUI (gui,titleGui) {
       // Controles para el  radio, altura y resolución del cono
       this.guiControls = new function () {
         
-        this.radioSup = 1;
-        this.radioInf = 1;
-        this.altura = 1;
-        this.segmentos = 3;   
+        this.radioSup = 1.0;
+        this.radioInf = 1.0;
+        this.altura = 1.0;
+        this.segmentos = 3.0;   
         
         // Un botón para dejarlo todo en su posición inicial
         // Cuando se pulse se ejecutará esta función.
         this.reset = function () {
-          this.radioSup = 1;
-          this.radioInf = 1;
-          this.altura = 1;
-          this.segmentos = 3;
+          this.radioSup = 1.0;
+          this.radioInf = 1.0;
+          this.altura = 1.0;
+          this.segmentos = 3.0;   
         }
       } 
   
@@ -51,26 +51,26 @@ class MyCylinder extends THREE.Object3D {
       // El método   listen()   permite que si se cambia el valor de la variable en código, el deslizador de la interfaz se actualice
       folder.add (this.guiControls, 'radioSup', 1, 5.0, 0.1).name ('Radio Superior : ').listen()
         .onChange(function(rad){
-          var cylGeo = new THREE.ConeGeometry(rad,that.guiControls.radioInf,that.guiControls.altura,that.guiControls.segmentos);
+          var cylGeo = new THREE.CylinderGeometry(rad,that.guiControls.radioInf,that.guiControls.altura,that.guiControls.segmentos);
           that.cyl.geometry = cylGeo;
         });
 
       folder.add (this.guiControls, 'radioInf', 1, 5.0, 0.1).name ('Radio Inferior : ').listen()
         .onChange(function(rad){
-          var cylGeo = new THREE.ConeGeometry(that.guiControls.radioSup,rad,that.guiControls.altura,that.guiControls.segmentos);
+          var cylGeo = new THREE.CylinderGeometry(that.guiControls.radioSup,rad,that.guiControls.altura,that.guiControls.segmentos);
           that.cyl.geometry = cylGeo;
         });
         
       folder.add (this.guiControls, 'altura', 1, 5.0, 0.1).name ('Altura : ').listen()
       .onChange(function(alt){
-        var cylGeo = new THREE.ConeGeometry(that.guiControls.radioSup,that.guiControls.radioInf,alt,that.guiControls.segmentos);
+        var cylGeo = new THREE.CylinderGeometry(that.guiControls.radioSup,that.guiControls.radioInf,alt,that.guiControls.segmentos);
         that.cyl.geometry = cylGeo;
       });
   
   
       folder.add (this.guiControls, 'segmentos', 3, 15.0, 0.1).name ('Resolucion : ').listen()
       .onChange(function(seg){
-        var cylGeo = new THREE.ConeGeometry(that.guiControls.radioSup,that.guiControls.radioInf,that.guiControls.altura,seg);
+        var cylGeo = new THREE.CylinderGeometry(that.guiControls.radioSup,that.guiControls.radioInf,that.guiControls.altura,seg);
         that.cyl.geometry = cylGeo;
       });
       
@@ -78,18 +78,8 @@ class MyCylinder extends THREE.Object3D {
     }
     
     update () {
-      // Con independencia de cómo se escriban las 3 siguientes líneas, el orden en el que se aplican las transformaciones es:
-      // Primero, el escalado
-      // Segundo, la rotación en Z
-      // Después, la rotación en Y
-      // Luego, la rotación en X
-      // Y por último la traslación
-      this.position.set (this.guiControls.posX,this.guiControls.posY,this.guiControls.posZ);
-      //this.rotation.set (this.guiControls.rotX,this.guiControls.rotY,this.guiControls.rotZ);
-      //this.scale.set (this.guiControls.sizeX,this.guiControls.altura,this.guiControls.sizeZ);
       this.cyl.rotation.x += 0.01;
       this.cyl.rotation.y += 0.01;
-  
     }
   
   }
