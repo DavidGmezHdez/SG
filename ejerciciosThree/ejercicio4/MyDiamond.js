@@ -9,7 +9,6 @@ class MyDiamond extends THREE.Object3D {
 
 
         var shape = new THREE.Shape();
-
         shape.moveTo(0,0);
         shape.lineTo(3.0,4.0);
         shape.lineTo(0.0,8.0);
@@ -20,13 +19,18 @@ class MyDiamond extends THREE.Object3D {
 
         // Para crear la figura por revolución
         var geo = new THREE.ExtrudeBufferGeometry(shape,extrudeSettings);
-        var material = new THREE.MeshNormalMaterial();
+        var material =  new THREE.MeshPhongMaterial({color: 0xff0000});
         this.figure = new THREE.Mesh(geo,material);
 
-
-        this.figure.position.set(-10,15,-10);
         
-        this.add(this.figure);
+        this.nodo1 = new THREE.Object3D();
+        this.nodo1.position.set(-4.0, 3.5, 0.0);
+        this.nodo1.add(this.figure);
+
+        this.nodo2 = new THREE.Object3D();
+        this.nodo2.add(this.nodo1);
+        
+        this.add(this.nodo2);
 
 
     }
@@ -35,7 +39,9 @@ class MyDiamond extends THREE.Object3D {
     }
     
     update () {
-      
+        this.nodo2.rotation.z += 0.01;
+        this.nodo1.rotation.z -= 0.01;
+        this.figure.rotation.y += 0.015;
     }
   }
   

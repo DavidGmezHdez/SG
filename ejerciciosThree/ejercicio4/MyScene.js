@@ -30,12 +30,28 @@ class MyScene extends THREE.Scene {
     
     this.corazon = new MyHeart(this.gui, "Controles corazon");
     this.add (this.corazon);
-    
+    this.corazon.position.set(10,5,-10);
+
     this.diamante = new MyDiamond(this.gui, "Controles diamante");
     this.add (this.diamante);
-    
-    
+    this.diamante.position.set(-10,15,-10);
 
+    this.trebol = new MySpade(this.gui, "Controles pica");
+    this.add(this.trebol);
+    this.trebol.position.set(-10,-5,-10);
+
+    this.pica = new MyClub(this.gui, "Controles pica");
+    this.add(this.pica);
+    this.pica.position.set(10,15,-10);
+
+    this.TrebolColumna = new MyClubColumn(this.gui, "Controles pica");
+    this.add(this.TrebolColumna);
+    this.TrebolColumna.position.set(-30,15,-10);
+
+    this.CorazonColumna = new MyHeartColumn(this.gui, "Controles pica");
+    this.add(this.CorazonColumna);
+    this.CorazonColumna.position.set(50,15,-10);
+    
   }
   
   createCamera () {
@@ -93,16 +109,19 @@ class MyScene extends THREE.Scene {
       // En el contexto de una función   this   alude a la función
       this.lightIntensity = 0.5;
       this.axisOnOff = true;
+      this.animacion = false;
     }
 
     // Se crea una sección para los controles de esta clase
-    var folder = gui.addFolder ('Luz y Ejes');
+    var folder = gui.addFolder ('Luz, Ejes y Animación');
     
     // Se le añade un control para la intensidad de la luz
     folder.add (this.guiControls, 'lightIntensity', 0, 1, 0.1).name('Intensidad de la Luz : ');
     
     // Y otro para mostrar u ocultar los ejes
     folder.add (this.guiControls, 'axisOnOff').name ('Mostrar ejes : ');
+
+    folder.add(this.guiControls,'animacion').name('Animación: ');
     
     return gui;
   }
@@ -182,10 +201,21 @@ class MyScene extends THREE.Scene {
     
     // Se actualiza el resto del modelo
     
-    this.corazon.update();
 
-    this.diamante.update();
-    
+    if(this.guiControls.animacion){
+      this.corazon.update();
+
+      this.diamante.update();
+  
+      this.pica.update();
+  
+      this.trebol.update();
+  
+      this.TrebolColumna.update();
+      
+      this.CorazonColumna.update();
+    }
+
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
   }
