@@ -9,7 +9,6 @@ class MyShip extends THREE.Object3D {
         var geo = new THREE.ConeGeometry(0.5,1.0,3.0);
         var mat = new THREE.MeshNormalMaterial();
         this.ship = new THREE.Mesh(geo,mat);
-        this.ship.rotation.x = Math.PI/2 ;
 
 
         //Creamos la linea que actuará como camino
@@ -28,7 +27,7 @@ class MyShip extends THREE.Object3D {
         var geoLinea = new THREE.Geometry();
         geoLinea.vertices = this.linea.getPoints(100);
 
-        var matLinea = new THREE.LineBasicMaterial({color: 0xff0000});
+        var matLinea = new THREE.LineBasicMaterial({color: 0x088A29});
         this.visualLinea = new THREE.Line(geoLinea,matLinea);
 
         var that = this;
