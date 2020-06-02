@@ -3,13 +3,19 @@ class MyShip extends THREE.Object3D {
     constructor(gui,titleGui) {
         super();
         
-        // Se crea la parte de la interfaz que corresponde a la caja
-        // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
-        this.createGUI(gui,titleGui);
+        var geoCollider = new THREE . BoxGeometry ( 7 , 5 , 5);
 
-        this.topeIzquierda = -20;
+        var collider_material = Physijs.createMaterial(
+            new THREE.MeshLambertMaterial({ color: 0xff4444, opacity: 0.0, transparent: true }),
+            .9, // alta friccion
+            .0 // alto rebote
+        );
 
-        this.topeDerecha = 20;
+        this.collider = new Physijs.BoxMesh(geoCollider,collider_material,0);
+
+        this.topeIzquierda = -25;
+
+        this.topeDerecha = 25;
 
         var objectLoader = new THREE.OBJLoader();
         var materialLoader = new THREE.MTLLoader();
@@ -25,16 +31,15 @@ class MyShip extends THREE.Object3D {
                 that.nave = object;
                 that.nave.scale.set(0.005,0.005,0.005);
                 that.nave.material = materials;
-                that.add(that.nave);
+                that.collider.colisionable = true;
+                that.collider.add(that.nave);
+                that.add(that.collider);
             },null,null);
         });
 
         this.rectitud = true;
         this.girada = false;
         
-    }
-        
-    createGUI (gui,titleGui) {
     }
 
     mover(direccion){

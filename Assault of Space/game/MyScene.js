@@ -4,8 +4,14 @@
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
  */
 
+//import { Clock } from "../libs/Clock";
+
 class MyScene extends THREE.Scene {
   constructor (myCanvas) {
+    // El gestor de hebras
+    Physijs.scripts.worker = './physijs/physijs_worker.js';
+    // El motor de física de bajo nivel, en el cual se apoya Physijs
+    Physijs.scripts.ammo   = './ammo.js';
     super();
     
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
@@ -29,23 +35,57 @@ class MyScene extends THREE.Scene {
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     
     this.nave = new MyShip(this.gui, "Controles Nave");
-    this.add (this.nave);
     this.nave.position.y = 5;
     this.nave.position.z = 30;
 
+    this.nave.addEventListener ('collision',function (o,v,r,n) {
+      console.log("entra");
+      alert("entra nave");
+    });
+    
+    this.add (this.nave);
+
+
+
+    
+
     this.borde1 = new Border(this.gui, "Controles Cilindro");
     this.add (this.borde1);
-    this.borde1.position.x = -26;
+    this.borde1.position.x = -30;
 
     this.borde2 = new Border(this.gui, "Controles Cilindro");
     this.add (this.borde2);
-    this.borde2.position.x = 26;
+    this.borde2.position.x = 30;
 
     this.laseres = new Array();
 
-    this.i;
+    this.enemigos = new Array();
     
-    
+    this.keys = { };
+
+    this.objetos = [];
+    this.sistemaColisiones = new THREEx.ColliderSystem();
+    this.objetos.push(this.colisionadorNave);
+
+    this.generarOleada(1);
+
+    //this.controlColisiones();
+
+    this.enemigosCargados = false;
+
+    setInterval(()=>this.disparosEnemigos(),5000);
+/*
+    var enemy = new Enemy(-20,-35);
+    enemy.position.set(-20,5,-35);
+    this.add(enemy);
+    this.enemigos.push(enemy)
+
+    var enemy = new Enemy(-12,-25);
+    enemy.position.set(-12,5,-25);
+    this.add(enemy);
+    this.enemigos.push(enemy)
+*/
+  
   }
   
   createCamera () {
@@ -180,40 +220,115 @@ class MyScene extends THREE.Scene {
 
   onKeyDown (event){
     var tecla = event.which || event.keyCode;
-    if(tecla == 37){
-      this.nave.mover(true);
-    }
-    else if(tecla == 39){
-      this.nave.mover(false);
-    }
+    this.keys[tecla] = true;
   }
 
   onKeyUp (event){
     var tecla = event.which || event.keyCode;
-    if(tecla == 37 || tecla == 39)
-      this.nave.ponerRecta();
+    this.keys[tecla] = false;
+
   }
 
   
   onKeyPress (event){
     var tecla = event.which || event.keyCode;
-    if(tecla == 32)
-      this.disparar()
+    this.keys[tecla] = true;
+    if(this.keys[32])
+    this.disparar();
+    
   }
 
   disparar(){
-    var laser = new Laser();
+    var laser = new Laser(true);
     laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
-    this.add(laser);
     this.laseres.push(laser);
-    
-    
+    this.add(laser);
   }
 
   eliminarLaser(laser){
     this.remove(laser);
     laser = null;
   }
+
+  ejecutarMovimiento(){
+    if(this.keys[37])
+      this.nave.mover(true);
+    
+    if(this.keys[39])
+      this.nave.mover(false);
+    
+    if(!this.keys[37] && !this.keys[39])
+      this.nave.ponerRecta();
+  }
+
+  ejecutarMovimientoEnemigos(){
+    for(let i=0;i<this.enemigos.length;i++){
+      this.enemigos[i].movimiento();
+    }
+  }
+
+  generarOleada(numeroOleada){
+    switch(numeroOleada){
+      case 1:
+        
+        for(let i=-20;i<=20;i+=8){
+          for(let j = -35;j<=-15;j+=10){
+            var enemy = new Enemy(i,j);
+            enemy.position.set(i,5,j);
+            enemy.addEventListener ('collision',function (o,v,r,n) {
+              console.log("entra enemigo");
+              alert("entra enemigo");
+            });
+            this.add(enemy);
+            this.enemigos.push(enemy)
+          }
+        }
+        this.enemigosCargados = true;
+        break;
+      case 2:
+        for(let i = -35;i<=-5;i+=10){
+          for(let j=-20;j<=20;j+=8){
+            var enemy = new Enemy(j,i);
+
+            this.add(enemy);
+            this.enemigos.push(enemy)
+          }
+        }
+        this.enemigosCargados = true;
+        break;
+    }
+    
+  }
+
+  dispararLasers(){
+    for(let i=0;i<this.laseres.length;i++){
+      var laser = this.laseres[i];
+      laser.update();
+      if(laser == -60){
+        this.eliminarLaser(laser);
+      }
+    }
+  }
+
+  disparosEnemigos(){
+    var laser = new Laser(false);
+    var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
+    laser.position.set(enemigo.getX(),5,enemigo.getZ());
+
+    laser.addEventListener ('collision',function (o,v,r,n) {
+      console.log("entra laser");
+      alert("entra laser");
+    });
+    
+    this.laseres.push(laser);
+    this.add(laser);
+  }
+
+  controlColisiones(){
+
+  }
+
+
 
   update () {
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
@@ -232,21 +347,28 @@ class MyScene extends THREE.Scene {
     // Se actualiza el resto del modelo
     
     
-   this.nave.update();
-   
-    for(this.i=0;this.i<this.laseres.length;this.i++){
-      this.laseres[this.i].update();
-      //console.log(this.laseres[this.i].position.z);
-      if(this.laseres[this.i].position.z == -60){
-        this.eliminarLaser(this.laseres[this.i]);
-      }
-    }
+    this.nave.update();
 
-   this.borde1.update();
 
+    this.dispararLasers();
+
+    //this.borde1.update();
+
+    this.ejecutarMovimiento();
+
+    //this.comprobarEnemigos();
+    
+    
+    //this.ejecutarMovimientoEnemigos();
+
+    this.ejecutarMovimientoEnemigos();
+    
+
+    //this.sistemaColisiones.computeAndNotify(this.objetos);
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
+
   }
 }
 
@@ -256,6 +378,8 @@ $(function () {
   // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
   var scene = new MyScene("#WebGL-output");
 
+  var finjuego = false;
+
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
 
@@ -264,7 +388,14 @@ $(function () {
   window.addEventListener ("keyup", () => scene.onKeyUp(event));
 
   window.addEventListener ("keypress", () => scene.onKeyPress(event));
+
+  
+
   
   // Que no se nos olvide, la primera visualización.
   scene.update();
+
+
+
+
 });
