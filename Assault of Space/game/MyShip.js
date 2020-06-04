@@ -1,9 +1,9 @@
  
-class MyShip extends THREE.Object3D {
-    constructor(gui,titleGui) {
+class MyShip extends THREE.Object3D{
+    constructor() {
         super();
         
-        var geoCollider = new THREE . BoxGeometry ( 7 , 5 , 5);
+        var geoCollider = new THREE.BoxGeometry ( 7 , 5 , 5);
 
         var collider_material = Physijs.createMaterial(
             new THREE.MeshLambertMaterial({ color: 0xff4444, opacity: 0.0, transparent: true }),
@@ -33,25 +33,29 @@ class MyShip extends THREE.Object3D {
                 that.nave.material = materials;
                 that.collider.colisionable = true;
                 that.collider.add(that.nave);
+                //that.collider.addEventListener ('collision',that.manejarColisiones());
                 that.add(that.collider);
             },null,null);
         });
-
         this.rectitud = true;
         this.girada = false;
         
     }
 
+    getNave(){
+        return this.collider;
+    }
+
     mover(direccion){
         if(direccion){
-            if(this.position.x > this.topeIzquierda){
-                this.position.x-=0.5;
+            if(this.collider.position.x > this.topeIzquierda){
+                this.collider.position.x-=0.5;
             }
             this.giroNave(direccion);
         }
         else{
-            if(this.position.x < this.topeDerecha){
-                this.position.x +=0.5;
+            if(this.collider.position.x < this.topeDerecha){
+                this.collider.position.x +=0.5;
             }
             this.giroNave(direccion);
         }
@@ -59,13 +63,13 @@ class MyShip extends THREE.Object3D {
 
     giroNave(direccion){
         if(!direccion){
-            if(this.rotation.z > -1){
-                this.rotation.z -=0.25;
+            if(this.collider.rotation.z > -1){
+                this.collider.rotation.z -=0.25;
             }
         }
         else{
-            if(this.rotation.z < 1){
-                this.rotation.z +=0.25;
+            if(this.collider.rotation.z < 1){
+                this.collider.rotation.z +=0.25;
             }
         }
         this.girada = true;
@@ -78,11 +82,11 @@ class MyShip extends THREE.Object3D {
     }
 
     rectificar(){
-        if(this.rotation.z>0)
-            this.rotation.z -=0.25;
-        else if(this.rotation.z < 0)
-            this.rotation.z +=0.25;
-        else if(this.rotation.z == 0)
+        if(this.collider.rotation.z>0)
+            this.collider.rotation.z -=0.25;
+        else if(this.collider.rotation.z < 0)
+            this.collider.rotation.z +=0.25;
+        else if(this.collider.rotation.z == 0)
             this.girada = false;
     }
         
@@ -90,7 +94,8 @@ class MyShip extends THREE.Object3D {
         if(this.rectitud && this.girada){
             this.rectificar();
         }
-        
+
+        //this.addEventListener('collision',this.manejarColisiones());
     }
   }
   

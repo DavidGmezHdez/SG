@@ -1,7 +1,7 @@
-class Laser extends THREE.Object3D {
+class Laser 
+{
     constructor(fuente) {
-      super();
-      
+
       var cylGeo = new THREE.CylinderGeometry(0.1,0.1,2,10);
       
       var cylMat
@@ -11,9 +11,7 @@ class Laser extends THREE.Object3D {
       else
         cylMat = new THREE.MeshPhongMaterial({color: 0xff0000});
       
-      this.cyl = new THREE.Mesh (cylGeo, cylMat);
-
-      var geoCollider = new THREE . BoxGeometry ( 0.25 , 2 , 0.25);
+      var geoCollider = new THREE.BoxGeometry ( 0.25 , 2 , 0.25);
 
       this.fuente = fuente;
 
@@ -22,26 +20,31 @@ class Laser extends THREE.Object3D {
           .9, 
           .9
       );
-      this.collider = new Physijs.BoxMesh(geoCollider,collider_material,0);
-      this.collider.add(this.cyl);
+      this.collider = new Physijs.BoxMesh(geoCollider,cylMat,5);
+      //this.collider.add(this.cyl);
       this.collider.rotation.x = Math.PI/2;
+      this.collider.colisionable = true 
 
-      this.collider.addEventListener ('collision',function (o,v,r,n) {
-        console.log("entra laser");
-        alert("entra laser");
-      });
-      
-      this.add(this.collider);
+      //this.collider.addEventListener ('collision',this.manejarColisiones());
 
+      this.collider.setCcdMotionThreshold(1);
 
+      this.collider.setCcdSweptSphereRadius(0.2);
+
+    }
+
+    getCollider(){
+      return this.collider;
     }
     
     
-    update () {
+    disparoLaser(){
         if(this.fuente)
-          this.position.z-=0.5;
+          this.collider.position.z-=0.5;
         else
-        this.position.z+=0.5;
+          this.collider.position.z+=0.5;
+
+        this.collider.__distyPosition = true;
     }
-  
+    
   }

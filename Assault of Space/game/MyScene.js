@@ -1,12 +1,5 @@
  
-/// La clase fachada del modelo
-/**
- * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
- */
-
-//import { Clock } from "../libs/Clock";
-
-class MyScene extends THREE.Scene {
+class MyScene extends Physijs.Scene {
   constructor (myCanvas) {
     // El gestor de hebras
     Physijs.scripts.worker = './physijs/physijs_worker.js';
@@ -34,28 +27,10 @@ class MyScene extends THREE.Scene {
     
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     
-    this.nave = new MyShip(this.gui, "Controles Nave");
-    this.nave.position.y = 5;
-    this.nave.position.z = 30;
-
-    this.nave.addEventListener ('collision',function (o,v,r,n) {
-      console.log("entra");
-      alert("entra nave");
-    });
-    
+    this.nave = new MyShip();
+    this.nave.getNave().position.y = 5;
+    this.nave.getNave().position.z = 30;
     this.add (this.nave);
-
-
-
-    
-
-    this.borde1 = new Border(this.gui, "Controles Cilindro");
-    this.add (this.borde1);
-    this.borde1.position.x = -30;
-
-    this.borde2 = new Border(this.gui, "Controles Cilindro");
-    this.add (this.borde2);
-    this.borde2.position.x = 30;
 
     this.laseres = new Array();
 
@@ -64,16 +39,17 @@ class MyScene extends THREE.Scene {
     this.keys = { };
 
     this.objetos = [];
-    this.sistemaColisiones = new THREEx.ColliderSystem();
     this.objetos.push(this.colisionadorNave);
 
-    this.generarOleada(1);
 
-    //this.controlColisiones();
 
     this.enemigosCargados = false;
 
-    setInterval(()=>this.disparosEnemigos(),5000);
+    setInterval(()=>this.disparar(false),5000);
+
+    this.generarOleada(1);
+
+    this.createCar()
 /*
     var enemy = new Enemy(-20,-35);
     enemy.position.set(-20,5,-35);
@@ -88,6 +64,38 @@ class MyScene extends THREE.Scene {
   
   }
   
+  createCar() {
+    var that = this;
+    var materialLoader = new THREE.MTLLoader();
+    var loader = new THREE.OBJLoader();
+    materialLoader.load ('porsche911/911.mtl',
+        function (materials) {
+                      loader.setMaterials (materials);
+                      loader.load ('porsche911/Porsche_911_GT2.obj',
+                        function (object) {
+                          var modelo = object;
+                          modelo.scale.set(2,2,2);
+                          var bounding = new THREE.BoxHelper(modelo);
+                          bounding.geometry.computeBoundingBox();
+                          var bb = bounding.geometry.boundingBox;
+                          var avatar = new THREE.BoxGeometry(bb.max.x-bb.min.x, bb.max.y-bb.min.y, bb.max.z-bb.min.z);
+                          var cf = new Physijs.BoxMesh (avatar,new THREE.MeshBasicMaterial({opacity:0.2, transparent:true}),1);
+                          cf.position.y = 5;
+                          cf.position.z = 25;
+                          cf.addEventListener('collision',
+                            function (o,v,r,n) {
+                              console.log (o.userData);
+                            }
+                          );
+                          cf.add(modelo);
+                          console.log(cf);
+                          that.add (cf);
+                        }, null, null);
+          
+        }
+    );
+  }
+
   createCamera () {
     // Para crear una cámara le indicamos
     //   El ángulo del campo de visión en grados sexagesimales
@@ -109,6 +117,31 @@ class MyScene extends THREE.Scene {
     this.cameraControl.panSpeed = 0.5;
     // Debe orbitar con respecto al punto de mira de la cámara
     this.cameraControl.target = look;
+    
+    
+/*
+    // Para crear una cámara le indicamos
+    //   El ángulo del campo de visión en grados sexagesimales
+    //   La razón de aspecto ancho/alto
+    //   Los planos de recorte cercano y lejano
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // También se indica dónde se coloca
+    this.camera.position.set (0, 0, 40);
+    // Y hacia dónde mira
+    var look = new THREE.Vector3 (0,0,0);
+    this.camera.lookAt(look);
+    this.add (this.camera);
+    
+    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
+    this.cameraControl = new THREE.TrackballControls (this.camera, this.renderer.domElement);
+    // Se configuran las velocidades de los movimientos
+    this.cameraControl.rotateSpeed = 5;
+    this.cameraControl.zoomSpeed = -2;
+    this.cameraControl.panSpeed = 0.5;
+    // Debe orbitar con respecto al punto de mira de la cámara
+    this.cameraControl.target = look;
+    */
+    
   }
   
   createEscenario () {
@@ -131,6 +164,16 @@ class MyScene extends THREE.Scene {
     
     // Que no se nos olvide añadirlo a la escena, que en este caso es  this
     this.add (espacio);
+
+    this.borde1 = new Border();
+    this.borde1.position.x = -30;
+    this.add (this.borde1);
+    
+
+    this.borde2 = new Border();
+    this.borde2.position.x = 30;
+    this.add (this.borde2);
+    
   }
   
   createGUI () {
@@ -229,21 +272,64 @@ class MyScene extends THREE.Scene {
 
   }
 
-  
   onKeyPress (event){
     var tecla = event.which || event.keyCode;
     this.keys[tecla] = true;
     if(this.keys[32])
-    this.disparar();
-    
+      this.disparar(true);
   }
 
-  disparar(){
-    var laser = new Laser(true);
-    laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
+  crearLaser(fuente){
+    var geoCollider = new THREE.BoxGeometry ( 0.25 , 2 , 0.25);
+    var collider_material;
+
+    if(fuente)
+    collider_material = Physijs.createMaterial(
+      new THREE.MeshLambertMaterial({ color: 0x088A29, opacity: 1.0, transparent: false }),
+      .9, // alta friccion
+      .0 // alto rebote
+    );
+    else
+      collider_material =  Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({ color: 0xff0000, opacity: 1.0, transparent: false }),
+        .9, // alta friccion
+        .0 // alto rebote
+      );
+
+    var laser = new Physijs.BoxMesh(geoCollider,collider_material,1);
+    laser.rotation.x = Math.PI/2;
+    laser.colisionable = true
+
+    return laser;
+  }
+
+  disparar(fuente){
+
+    var laser = this.crearLaser(fuente);
+
+
+    
+    if(fuente){
+      laser.userData = 'jugador';
+      laser.position.set(this.nave.getNave().position.x,this.nave.getNave().position.y,this.nave.getNave().position.z);
+    }
+
+    else{
+      laser.userData = 'enemigo';
+      var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
+      laser.position.set(0,5,0);
+    }
+
+    laser.addEventListener ('collision',(o,v,r,n) => function (o,v,r,n) {
+      console.log(o.userData);
+    });
+
     this.laseres.push(laser);
     this.add(laser);
+
+    console.log(laser);
   }
+
 
   eliminarLaser(laser){
     this.remove(laser);
@@ -270,15 +356,10 @@ class MyScene extends THREE.Scene {
   generarOleada(numeroOleada){
     switch(numeroOleada){
       case 1:
-        
         for(let i=-20;i<=20;i+=8){
           for(let j = -35;j<=-15;j+=10){
             var enemy = new Enemy(i,j);
             enemy.position.set(i,5,j);
-            enemy.addEventListener ('collision',function (o,v,r,n) {
-              console.log("entra enemigo");
-              alert("entra enemigo");
-            });
             this.add(enemy);
             this.enemigos.push(enemy)
           }
@@ -289,7 +370,6 @@ class MyScene extends THREE.Scene {
         for(let i = -35;i<=-5;i+=10){
           for(let j=-20;j<=20;j+=8){
             var enemy = new Enemy(j,i);
-
             this.add(enemy);
             this.enemigos.push(enemy)
           }
@@ -302,32 +382,23 @@ class MyScene extends THREE.Scene {
 
   dispararLasers(){
     for(let i=0;i<this.laseres.length;i++){
-      var laser = this.laseres[i];
-      laser.update();
-      if(laser == -60){
-        this.eliminarLaser(laser);
+      this.laseres[i].__dirtyPosition = true;
+      if(this.laseres[i].userData == 'jugador'){
+        this.laseres[i].position.z-=0.5;
       }
+      else{
+        this.laseres[i].position.z+=0.5;
+      }
+      
+      if(this.laseres[i].position.z == -60)
+        this.eliminarLaser(this.laseres[i]);
+      
     }
   }
 
-  disparosEnemigos(){
-    var laser = new Laser(false);
-    var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
-    laser.position.set(enemigo.getX(),5,enemigo.getZ());
-
-    laser.addEventListener ('collision',function (o,v,r,n) {
-      console.log("entra laser");
-      alert("entra laser");
-    });
-    
-    this.laseres.push(laser);
-    this.add(laser);
+  manejarColisiones(){
+    console.log("laser colisionando");
   }
-
-  controlColisiones(){
-
-  }
-
 
 
   update () {
@@ -352,19 +423,14 @@ class MyScene extends THREE.Scene {
 
     this.dispararLasers();
 
-    //this.borde1.update();
-
     this.ejecutarMovimiento();
 
     //this.comprobarEnemigos();
     
-    
     //this.ejecutarMovimientoEnemigos();
-
-    this.ejecutarMovimientoEnemigos();
     
-
-    //this.sistemaColisiones.computeAndNotify(this.objetos);
+    // Se le pide al motor de física que actualice las figuras según sus leyes
+    this.simulate();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());

@@ -25,7 +25,6 @@ class Enemy extends THREE.Object3D {
             that.enemy.rotation.y = Math.PI;
             //that.collider.colisionable = true;
             that.collider.add(that.enemy);
-            console.log(that.collider);
 
             that.collider.addEventListener ('collision',function (o,v,r,n) {
                 console.log("entra enemigo");
@@ -65,17 +64,6 @@ class Enemy extends THREE.Object3D {
 
     }
 
-    movimientoTween(){
-        var inicio = {x: this.x, z:this.z};
-        var final = {x:this.topeDerecha,z:this.z+0.2};
-
-        var movimiento1 = new TWEEN.Tween(inicio).to(final,1000)
-        .repeat(Infinity)
-        .easing(TWEEN.Easing.Quadratic.InOut)
-        .yoyo(true);
-
-        movimiento1.start();
-    }
 
         
     update () {
