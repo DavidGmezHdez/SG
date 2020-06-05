@@ -1,48 +1,46 @@
  
-class Enemy extends THREE.Object3D {
+class Enemy extends THREE.Object3D{
     constructor(x,z) {
         super();
         
-        var geoCollider = new THREE . BoxGeometry ( 6.5 , 5 , 8 );
-
-        var collider_material = Physijs.createMaterial(
-            new THREE.MeshLambertMaterial({ color: 0xff4444, opacity: 0.9, transparent: true }),
-            .9, // alta friccion
-            .0 // alto rebote
-        );
-
-        this.collider = new Physijs.BoxMesh(geoCollider,collider_material,0);
         this.x = x, this.z = z;
         var objectLoader = new THREE.OBJLoader();
         this.enemy;
         var that = this;
         this.derecha = true;
 
+        this.vidasEnemigo = 5;
+
         
         objectLoader.load('enemigo/SmallSpaceFighter.obj',function(object){
             that.enemy = object;
             that.enemy.scale.set(0.9,0.9,0.9);
             that.enemy.rotation.y = Math.PI;
-            //that.collider.colisionable = true;
-            that.collider.add(that.enemy);
-
-            that.collider.addEventListener ('collision',function (o,v,r,n) {
-                console.log("entra enemigo");
-                alert("entra enemigo");
-              });
-            that.add(that.collider);
+            that.add(that.enemy);
         },null,null);
         this.topeDerecha = x + 5;
         this.topeIzquierda = x - 5;
     }
 
+    getEmemigo(){
+        return this.collider;
+    }
+
 
     getX(){
-        return this.position.x;
+        return this.enemy.position.x;
     }
 
     getZ(){
-        return this.position.z;
+        return this.enemy.position.z;
+    }
+
+    getVidasEnemigo(){
+        return this.vidasEnemigo;
+    }
+
+    eliminarVida(){
+        this.vidasEnemigo = this.vidasEnemigo - 1;
     }
 
     movimiento(){
@@ -61,13 +59,13 @@ class Enemy extends THREE.Object3D {
                 this.derecha = true;
         }
 
-
     }
 
 
         
     update () {
-        
+
+
     }
   }
   

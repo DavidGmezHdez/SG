@@ -17,9 +17,9 @@ class MyShip extends THREE.Object3D{
 
         this.topeDerecha = 25;
 
+        this.nave;
         var objectLoader = new THREE.OBJLoader();
         var materialLoader = new THREE.MTLLoader();
-        this.nave;
         var that = this;
 
         
@@ -31,10 +31,7 @@ class MyShip extends THREE.Object3D{
                 that.nave = object;
                 that.nave.scale.set(0.005,0.005,0.005);
                 that.nave.material = materials;
-                that.collider.colisionable = true;
-                that.collider.add(that.nave);
-                //that.collider.addEventListener ('collision',that.manejarColisiones());
-                that.add(that.collider);
+                that.add(that.nave);
             },null,null);
         });
         this.rectitud = true;
@@ -42,20 +39,18 @@ class MyShip extends THREE.Object3D{
         
     }
 
-    getNave(){
-        return this.collider;
-    }
 
     mover(direccion){
+        
         if(direccion){
-            if(this.collider.position.x > this.topeIzquierda){
-                this.collider.position.x-=0.5;
+            if(this.position.x > this.topeIzquierda){
+                this.position.x-=0.5;
             }
             this.giroNave(direccion);
         }
         else{
-            if(this.collider.position.x < this.topeDerecha){
-                this.collider.position.x +=0.5;
+            if(this.position.x < this.topeDerecha){
+                this.position.x +=0.5;
             }
             this.giroNave(direccion);
         }
@@ -63,13 +58,13 @@ class MyShip extends THREE.Object3D{
 
     giroNave(direccion){
         if(!direccion){
-            if(this.collider.rotation.z > -1){
-                this.collider.rotation.z -=0.25;
+            if(this.rotation.z > -1){
+                this.rotation.z -=0.25;
             }
         }
         else{
-            if(this.collider.rotation.z < 1){
-                this.collider.rotation.z +=0.25;
+            if(this.rotation.z < 1){
+                this.rotation.z +=0.25;
             }
         }
         this.girada = true;
@@ -82,11 +77,11 @@ class MyShip extends THREE.Object3D{
     }
 
     rectificar(){
-        if(this.collider.rotation.z>0)
-            this.collider.rotation.z -=0.25;
-        else if(this.collider.rotation.z < 0)
-            this.collider.rotation.z +=0.25;
-        else if(this.collider.rotation.z == 0)
+        if(this.rotation.z>0)
+            this.rotation.z -=0.25;
+        else if(this.rotation.z < 0)
+            this.rotation.z +=0.25;
+        else if(this.rotation.z == 0)
             this.girada = false;
     }
         
