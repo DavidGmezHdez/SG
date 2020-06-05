@@ -41,26 +41,30 @@ class MyScene extends Physijs.Scene {
 
     var geoCollider = new THREE.BoxGeometry ( 6.5 , 5 , 8 );
 
-    var boxGeom = new THREE.BoxGeometry (1,1,1);
-    // Como material se crea uno a partir de un color
-    var boxMat = new THREE.MeshNormalMaterial();
-    
-    // Ya podemos construir el Mesh
-    this.box = new THREE.Mesh (boxGeom, boxMat);
 
     this.keys = { };
 
-    this.objetos = [];
-
     this.enemigosCargados = false;
 
-    setInterval(()=>this.disparar(false),5000);
+    this.oleada = 3;
 
-    this.generarOleada(1);
+    switch (this.oleada){
+      case 1:
+        this.generarOleada(1);
+        setInterval(()=>this.disparar(false),5000);
+        break;
 
-    console.log(this.enemigos[0])
+      case 2:
+        this.generarOleada(2);
+        setInterval(()=>this.disparar(false),2000);
+        break;
+      case 3:
+        this.generarOleada(3);
+        setInterval(()=>this.disparar(false),1000);
+        setInterval(()=>this.disparoBoss(false),2500);
 
-    //this.createCar()
+    }
+
 /*
     var enemy = new Enemy(-20,-35);
     enemy.position.set(-20,5,-35);
@@ -274,23 +278,46 @@ class MyScene extends Physijs.Scene {
   }
 
   disparar(fuente){
-    var laser = this.crearLaser(fuente);
+
+    
     
     if(fuente){
+      var laser = this.crearLaser(fuente);
       laser.userData = 'jugador';
       laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
       this.laseresJugador.push(laser);
+      this.add(laser);
     }
 
     else{
-      laser.userData = 'enemigo';
-      var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
-      laser.position.set(0,5,0);
-      
-      this.laseresEnemigos.push(laser);
-    }
+      if(this.enemigos.length > 0){
+        var laser = this.crearLaser(fuente);
+        laser.userData = 'enemigo';
+        var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
+        laser.position.set(enemigo.position.x,5,enemigo.position.x);
+        this.laseresEnemigos.push(laser);
+        this.add(laser);
+      }
 
-    this.add(laser);
+    }
+  }
+
+  disparoBoss(){
+    var laser = this.crearLaser(false);
+    var laser2 = this.crearLaser(false);
+    
+    laser.userData = 'enemigo';
+    var boss = this.enemigos.find(element => element.boss);
+    console.log(boss);
+
+    laser.position.set(boss.position.x+4,5,boss.position.x);
+    laser2.position.set(boss.position.x-4,5,boss.position.x);
+
+    this.laseresEnemigos.push(laser);
+    this.laseresEnemigos.push(laser2);
+    
+    this.add(laser)
+    this.add(laser2);
   }
 
 
@@ -310,6 +337,11 @@ class MyScene extends Physijs.Scene {
     var index = this.enemigos.indexOf(enemigo)
     this.enemigos.splice(index,1);
     this.remove(enemigo);
+  }
+
+  eliminarJugador(){
+    this.remove(this.nave);
+    this.nave = null;
   }
 
   ejecutarMovimiento(){
@@ -343,15 +375,44 @@ class MyScene extends Physijs.Scene {
         this.enemigosCargados = true;
         break;
       case 2:
-        for(let i = -35;i<=-5;i+=10){
-          for(let j=-20;j<=20;j+=8){
-            var enemy = new Enemy(j,i);
+        for(let i=-20;i<=20;i+=8){
+          for(let j= -35;j<=-5;j+=10){
+            var enemy = new Enemy(i,j);
+            enemy.position.set(i,5,j);
             this.add(enemy);
             this.enemigos.push(enemy)
           }
         }
         this.enemigosCargados = true;
         break;
+
+        case 3:
+
+          for(let i=-20;i<=-10;i+=8){
+            for(let j= -35;j<=-5;j+=10){
+              var enemy = new Enemy(i,j);
+              enemy.position.set(i,5,j);
+              this.add(enemy);
+              this.enemigos.push(enemy)
+            }
+          }
+          var boss = new Boss(0,-20);
+          boss.position.set(0,8,-20);
+          this.add(boss);
+          console.log(boss);
+          this.enemigos.push(boss);
+
+          for(let i=10;i<=20;i+=8){
+            for(let j= -35;j<=-5;j+=10){
+              var enemy = new Enemy(i,j);
+              enemy.position.set(i,5,j);
+              this.add(enemy);
+              this.enemigos.push(enemy)
+            }
+          }
+          
+          this.enemigosCargados = true;
+          break;
     }
     
   }
@@ -384,16 +445,14 @@ class MyScene extends Physijs.Scene {
   comprobarEnemigos(laser){
     if(laser != undefined){
       var caster = new THREE.Raycaster();
-		  caster.set(laser.position, new THREE.Vector3(1, 0, 1));
-		  caster.far = 2;
+		  caster.set(laser.position, new THREE.Vector3(0, 0, -1));
+		  caster.far = 1;
       var objetos = caster.intersectObjects(this.enemigos,true);
   
       if(objetos.length>0){
         var enemigo = objetos[0].object.parent.parent;
         this.eliminarLaser(laser,true);
-        console.log(enemigo)
-        
-         
+      
         if(enemigo.getVidasEnemigo() > 0)
           enemigo.eliminarVida();
         else
@@ -407,13 +466,18 @@ class MyScene extends Physijs.Scene {
     
     if(laser != undefined){
       var caster = new THREE.Raycaster();
-		  caster.set(laser.position, new THREE.Vector3(1, 0, 1));
-		  caster.far = 2;
-      var objetos = caster.intersectObject(this.nave,true);
-      //console.log(caster.ray);
-      if(objetos > 0){
-        console.log("ha chocado con jugador");
+      caster.set(laser.position, new THREE.Vector3(0, 0, 1));
+		  caster.far = 1;
+      var objeto = caster.intersectObject(this.nave,true);
+      if(objeto.length > 0){
         this.eliminarLaser(laser,false);
+        console.log(this.nave.getVidasJugador());
+        console.log(this.nave.getVidasJugador() > 0);
+        if(this.nave.getVidasJugador() > 0)
+          this.nave.eliminarVida();
+        else if(this.nave.getVidasJugador() == 0)
+          console.log("has sido destruido")
+          //this.eliminarJugador();
       }
     }
   }
@@ -441,13 +505,14 @@ class MyScene extends Physijs.Scene {
     this.nave.update();
 
     //if(this.laseresJugador.length >= 1)
-      this.dispararLasers();
+    
+    this.dispararLasers();
 
     this.ejecutarMovimiento();
 
     this.comprobarEnemigos();
     
-    //this.ejecutarMovimientoEnemigos();
+    this.ejecutarMovimientoEnemigos();
     
     // Se le pide al motor de física que actualice las figuras según sus leyes
     this.simulate();

@@ -20,6 +20,9 @@ class MyShip extends THREE.Object3D{
         this.nave;
         var objectLoader = new THREE.OBJLoader();
         var materialLoader = new THREE.MTLLoader();
+
+        this.vidasJugador = 5;
+
         var that = this;
 
         
@@ -31,7 +34,8 @@ class MyShip extends THREE.Object3D{
                 that.nave = object;
                 that.nave.scale.set(0.005,0.005,0.005);
                 that.nave.material = materials;
-                that.add(that.nave);
+                that.collider.add(that.nave);
+                that.add(that.collider);
             },null,null);
         });
         this.rectitud = true;
@@ -39,6 +43,10 @@ class MyShip extends THREE.Object3D{
         
     }
 
+
+    getNave(){
+        return this.collider;
+    }
 
     mover(direccion){
         
@@ -83,6 +91,14 @@ class MyShip extends THREE.Object3D{
             this.rotation.z +=0.25;
         else if(this.rotation.z == 0)
             this.girada = false;
+    }
+
+    getVidasJugador(){
+        return this.vidasJugador;
+    }
+
+    eliminarVida(){
+        this.vidasJugador = this.vidasJugador - 1;
     }
         
     update () {

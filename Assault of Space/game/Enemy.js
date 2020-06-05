@@ -8,8 +8,9 @@ class Enemy extends THREE.Object3D{
         this.enemy;
         var that = this;
         this.derecha = true;
+        
 
-        this.vidasEnemigo = 5;
+        this.vidasEnemigo = 3;
 
         
         objectLoader.load('enemigo/SmallSpaceFighter.obj',function(object){
@@ -21,11 +22,6 @@ class Enemy extends THREE.Object3D{
         this.topeDerecha = x + 5;
         this.topeIzquierda = x - 5;
     }
-
-    getEmemigo(){
-        return this.collider;
-    }
-
 
     getX(){
         return this.enemy.position.x;
