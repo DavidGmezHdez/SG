@@ -1,0 +1,16 @@
+
+.vidas{
+    position: absolute;
+    width: 20%;
+    height: 20%;
+    display: inline-block;
+    padding-left: 20%;
+    padding-top: 10%;
+}
+
+.vidas img{
+    width: 20%;
+    height: 20%;
+    background-image: none;
+}
+
