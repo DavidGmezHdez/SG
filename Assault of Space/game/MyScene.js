@@ -1,6 +1,6 @@
  
 class MyScene extends Physijs.Scene {
-  constructor (unRendered) {
+  constructor (unRendered,oleada) {
     super();
     
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
@@ -26,8 +26,7 @@ class MyScene extends Physijs.Scene {
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     
     this.nave = new MyShip();
-    this.nave.position.y = 5;
-    this.nave.position.z = 30;
+
     this.add (this.nave);
     
 
@@ -36,18 +35,18 @@ class MyScene extends Physijs.Scene {
 
     this.enemigos = new Array();
 
-    this.raycasterJugador = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0,0,-1), 0,2);
-    this.raycasterEnemigo = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0,0,1), 0,2);
-
-    var geoCollider = new THREE.BoxGeometry ( 6.5 , 5 , 8 );
-
-
     this.keys = { };
 
     this.enemigosCargados = false;
 
-    this.oleada = 3;
+    this.oleada = oleada;
 
+    this.juegoEmpezado = false;
+    this.finJuego = false;
+    this.resultado;
+
+    //this.generarOleada(this.oleada);
+/*
     switch (this.oleada){
       case 1:
         this.generarOleada(1);
@@ -64,8 +63,9 @@ class MyScene extends Physijs.Scene {
         setInterval(()=>this.disparoBoss(false),2500);
 
     }
+    */
 
-/*
+    /*
     var enemy = new Enemy(-20,-35);
     enemy.position.set(-20,5,-35);
     this.add(enemy);
@@ -75,8 +75,8 @@ class MyScene extends Physijs.Scene {
     enemy.position.set(-12,5,-25);
     this.add(enemy);
     this.enemigos.push(enemy)
-*/
-  
+
+  */
   }
   
 
@@ -251,6 +251,23 @@ class MyScene extends Physijs.Scene {
     setTimeout(function() { pressed = false }, 5000);
     if(this.keys[32] && pressed)
       this.disparar(true);
+    
+    if(this.keys[13] && !this.juegoEmpezado && this.enemigosCargados){
+      this.juegoEmpezado = true;
+      switch (this.oleada){
+        case 1:
+          setInterval(()=>this.disparar(false),5000);
+          break;
+  
+        case 2:
+          setInterval(()=>this.disparar(false),2000);
+          break;
+        case 3:
+          setInterval(()=>this.disparar(false),1000);
+          setInterval(()=>this.disparoBoss(false),2500);
+  
+      }
+    }
   }
 
   crearLaser(fuente){
@@ -279,45 +296,54 @@ class MyScene extends Physijs.Scene {
 
   disparar(fuente){
 
-    
-    
-    if(fuente){
-      var laser = this.crearLaser(fuente);
-      laser.userData = 'jugador';
-      laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
-      this.laseresJugador.push(laser);
-      this.add(laser);
-    }
+    if(this.juegoEmpezado){
 
-    else{
-      if(this.enemigos.length > 0){
+      if(fuente){
         var laser = this.crearLaser(fuente);
-        laser.userData = 'enemigo';
-        var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
-        laser.position.set(enemigo.position.x,5,enemigo.position.x);
-        this.laseresEnemigos.push(laser);
+        laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
+        this.laseresJugador.push(laser);
         this.add(laser);
+      }
+  
+      else{
+        console.log(this.enemigos.length > 0);
+        if(this.enemigos.length > 0){
+          var laser = this.crearLaser(fuente);
+          var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
+          laser.position.set(enemigo.position.x,5,enemigo.position.z);
+          this.laseresEnemigos.push(laser);
+          this.add(laser);
+        }
+  
       }
 
     }
+    
+    
+
   }
 
   disparoBoss(){
-    var laser = this.crearLaser(false);
-    var laser2 = this.crearLaser(false);
-    
-    laser.userData = 'enemigo';
-    var boss = this.enemigos.find(element => element.boss);
-    console.log(boss);
 
-    laser.position.set(boss.position.x+4,5,boss.position.x);
-    laser2.position.set(boss.position.x-4,5,boss.position.x);
-
-    this.laseresEnemigos.push(laser);
-    this.laseresEnemigos.push(laser2);
+    var boss;
+    if(this.enemigos.find(element => element.boss) && this.juegoEmpezado){
+      boss = this.enemigos.find(element => element.boss);
+      var laser = this.crearLaser(false);
+      var laser2 = this.crearLaser(false);
+      
+      laser.userData = 'enemigo';
+      boss = this.enemigos.find(element => element.boss);
+  
+      laser.position.set(boss.position.x+4,5,boss.position.z);
+      laser2.position.set(boss.position.x-4,5,boss.position.z);
+  
+      this.laseresEnemigos.push(laser);
+      this.laseresEnemigos.push(laser2);
+      
+      this.add(laser)
+      this.add(laser2);
+    }
     
-    this.add(laser)
-    this.add(laser2);
   }
 
 
@@ -334,7 +360,8 @@ class MyScene extends Physijs.Scene {
   }
 
   eliminarEnemigo(enemigo){
-    var index = this.enemigos.indexOf(enemigo)
+    var index = this.enemigos.indexOf(enemigo);
+    this.enemigos[index] = null;
     this.enemigos.splice(index,1);
     this.remove(enemigo);
   }
@@ -362,6 +389,17 @@ class MyScene extends Physijs.Scene {
   }
 
   generarOleada(numeroOleada){
+
+    for(let i=0;i<this.laseresEnemigos.length;++i){
+      this.eliminarLaser(this.laseresEnemigos[i]);
+    }
+
+    for(let i=0;i<this.laseresJugador.length;++i){
+      this.eliminarLaser(this.laseresJugador[i]);
+    }
+    this.nave.position.set(5,5,30);
+    
+
     switch(numeroOleada){
       case 1:
         for(let i=-20;i<=20;i+=8){
@@ -373,6 +411,7 @@ class MyScene extends Physijs.Scene {
           }
         }
         this.enemigosCargados = true;
+        setInterval(()=>this.disparar(false),5000);
         break;
       case 2:
         for(let i=-20;i<=20;i+=8){
@@ -384,6 +423,7 @@ class MyScene extends Physijs.Scene {
           }
         }
         this.enemigosCargados = true;
+        setInterval(()=>this.disparar(false),2000);
         break;
 
         case 3:
@@ -412,8 +452,12 @@ class MyScene extends Physijs.Scene {
           }
           
           this.enemigosCargados = true;
+          setInterval(()=>this.disparar(false),1000);
+          setInterval(()=>this.disparoBoss(false),2500);
           break;
     }
+
+
     
   }
 
@@ -482,6 +526,26 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  comprobarFinJuego(){
+    if(this.enemigos.length == 0 && this.nave.getVidasJugador()>0){
+      this.finJuego = true;
+      this.resultado = "Victoria";
+    }
+
+    else if(this.enemigos.length > 0 && this.nave.getVidasJugador()==0){
+      this.finJuego = true;
+      this.resultado = "Derrota";
+    }
+    else if(this.enemigos.length > 0){
+      for(let i=0;i<this.enemigos[i].length;++i){
+        if(this.enemigos[i].position.z == 30){
+          this.finJuego = true;
+          this.resultado = "Derrota";
+        }
+      }
+    }
+  }
+
 
 
 
@@ -501,21 +565,48 @@ class MyScene extends Physijs.Scene {
     
     // Se actualiza el resto del modelo
     
-    
-    this.nave.update();
+    if(!this.juegoEmpezado && !this.enemigosCargados){
+      this.generarOleada(this.oleada);
+    }
 
-    //if(this.laseresJugador.length >= 1)
-    
-    this.dispararLasers();
+    else if(this.juegoEmpezado && !this.finJuego){
+      
+      this.nave.update();
+      
+      this.dispararLasers();
+  
+      this.ejecutarMovimiento();
+  
+      this.comprobarEnemigos();
+      
+      this.ejecutarMovimientoEnemigos();
+      
+      //Comprobamos el estado del juego
+      this.comprobarFinJuego();
 
-    this.ejecutarMovimiento();
+      // Se le pide al motor de física que actualice las figuras según sus leyes
+      this.simulate();
+    }
 
-    this.comprobarEnemigos();
+    else if(this.finJuego){
+      if(this.resultado == "Victoria"){
+        if(this.oleada < 3){
+          console.log("Has ganado, cargando siguiente oleada");
+          this.oleada++;
+          this.enemigosCargados = false;
+          this.juegoEmpezado = false;
+          this.finJuego = false;
+        }
+        else if(this.oleada > 3){
+          console.log("Enhorabuena, has compleado el juego");
+        }
+        
+      }
+      else if(this.resultado == "Derrota"){
+        console.log("Has perdido");
+      }
+    }
     
-    this.ejecutarMovimientoEnemigos();
-    
-    // Se le pide al motor de física que actualice las figuras según sus leyes
-    this.simulate();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     //this.renderer.render (this, this.getCamera());

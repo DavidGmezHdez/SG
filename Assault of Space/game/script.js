@@ -81,7 +81,7 @@ $(function () {
   gui = new dat.GUI();
   
   // Se crea la escena. La escena es una instancia de nuestra propia clase encargada de crear y gestionar todos los elementos que intervienen en la escena.
-  scene = new MyScene (renderer.domElement);
+  scene = new MyScene (renderer.domElement,1);
 
 
   window.addEventListener ("resize", () => scene.onWindowResize());
