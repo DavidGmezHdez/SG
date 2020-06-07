@@ -40,6 +40,7 @@ class MyShip extends THREE.Object3D{
         });
         this.rectitud = true;
         this.girada = false;
+        this.disparoDoble = false;
         
     }
 
@@ -99,6 +100,20 @@ class MyShip extends THREE.Object3D{
 
     eliminarVida(){
         this.vidasJugador = this.vidasJugador - 1;
+    }
+
+    sumarVida(){
+        if(this.vidasJugador < 5){
+            this.vidasJugador++;
+        }
+    }
+
+    setDisparoDoble(disparo){
+        this.disparoDoble = disparo;
+    }
+
+    getDisparoDoble(){
+        return this.disparoDoble;
     }
         
     update () {

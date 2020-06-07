@@ -32,8 +32,8 @@ class MyScene extends Physijs.Scene {
 
     this.laseresJugador = new Array();
     this.laseresEnemigos = new Array();
-
     this.enemigos = new Array();
+    this.buffs = new Array();
 
     this.keys = { };
 
@@ -45,25 +45,6 @@ class MyScene extends Physijs.Scene {
     this.finJuego = false;
     this.resultado;
 
-    //this.generarOleada(this.oleada);
-/*
-    switch (this.oleada){
-      case 1:
-        this.generarOleada(1);
-        setInterval(()=>this.disparar(false),5000);
-        break;
-
-      case 2:
-        this.generarOleada(2);
-        setInterval(()=>this.disparar(false),2000);
-        break;
-      case 3:
-        this.generarOleada(3);
-        setInterval(()=>this.disparar(false),1000);
-        setInterval(()=>this.disparoBoss(false),2500);
-
-    }
-    */
 
     /*
     var enemy = new Enemy(-20,-35);
@@ -299,15 +280,27 @@ class MyScene extends Physijs.Scene {
     if(this.juegoEmpezado){
 
       if(fuente){
-        var laser = this.crearLaser(fuente);
-        laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
-        this.laseresJugador.push(laser);
-        this.add(laser);
+        if(this.nave.getDisparoDoble()){
+          var laser1 = this.crearLaser(fuente);
+          var laser2 = this.crearLaser(fuente);
+          laser1.position.set(this.nave.position.x + 3,this.nave.position.y,this.nave.position.z);
+          laser2.position.set(this.nave.position.x - 3,this.nave.position.y,this.nave.position.z);
+          this.laseresJugador.push(laser1);
+          this.laseresJugador.push(laser2);
+          this.add(laser1);
+          this.add(laser2);
+        }
+        else{
+          var laser = this.crearLaser(fuente);
+          laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
+          this.laseresJugador.push(laser);
+          this.add(laser);
+        }
+
       }
   
       else{
-        console.log(this.enemigos.length > 0);
-        if(this.enemigos.length > 0){
+        if(this.enemigos.length > 0 && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
           var laser = this.crearLaser(fuente);
           var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
           laser.position.set(enemigo.position.x,5,enemigo.position.z);
@@ -326,7 +319,7 @@ class MyScene extends Physijs.Scene {
   disparoBoss(){
 
     var boss;
-    if(this.enemigos.find(element => element.boss) && this.juegoEmpezado){
+    if(this.enemigos.find(element => element.boss) && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
       boss = this.enemigos.find(element => element.boss);
       var laser = this.crearLaser(false);
       var laser2 = this.crearLaser(false);
@@ -362,6 +355,7 @@ class MyScene extends Physijs.Scene {
   }
 
   eliminarEnemigo(enemigo){
+    this.spawnearBuff(enemigo);
     var index = this.enemigos.indexOf(enemigo);
     this.enemigos[index] = null;
     this.enemigos.splice(index,1);
@@ -370,6 +364,13 @@ class MyScene extends Physijs.Scene {
 
   eliminarJugador(){
     this.remove(this.nave);
+  }
+
+  eliminarBuff(buff){
+    var index = this.buffs.indexOf(buff);
+    this.buffs[index] = null;
+    this.buffs.splice(index,1);
+    this.remove(buff);
   }
 
   ejecutarMovimiento(){
@@ -389,18 +390,31 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  limpiarRestos(){
+      for(let i=0;i<this.laseresEnemigos.length;++i){
+        this.eliminarLaser(this.laseresEnemigos[i]);
+      }
+    
+      for(let i=0;i<this.laseresJugador.length;++i){
+        this.eliminarLaser(this.laseresJugador[i]);
+      }
+
+      for(let i=0;i<this.buffs.length;++i){
+        this.eliminarLaser(this.buffs[i]);
+      }
+    
+
+      this.nave.position.set(0,5,30);
+      this.nave.rectificar();
+    
+
+    
+  }
+
   generarOleada(numeroOleada){
 
-    for(let i=0;i<this.laseresEnemigos.length;++i){
-      this.eliminarLaser(this.laseresEnemigos[i]);
-    }
+    this.limpiarRestos();
 
-    for(let i=0;i<this.laseresJugador.length;++i){
-      this.eliminarLaser(this.laseresJugador[i]);
-    }
-    this.nave.position.set(0,5,30);
-    this.nave.rectificar();
-    
 
     switch(numeroOleada){
       case 1:
@@ -463,7 +477,7 @@ class MyScene extends Physijs.Scene {
     
   }
 
-  dispararLasers(){
+  actualizarObjetos(){
     if(this.laseresJugador.length > 0){
       for(let i=0;i<this.laseresJugador.length;i++){
         this.laseresJugador[i].__dirtyPosition = true;
@@ -483,8 +497,17 @@ class MyScene extends Physijs.Scene {
         if(this.laseresEnemigos[i].position.z > 40 && this.laseresEnemigos[i] != undefined)
           this.eliminarLaser(this.laseresEnemigos[i],false);
       }
-
     }
+
+    if(this.buffs.length > 0){
+      for(let i=0;i<this.buffs.length;i++){
+        this.buffs[i].update();
+        this.comprobarObjetos(this.buffs[i]);
+        if(this.buffs[i].position.z > 40 && this.buffs[i] != undefined)
+          this.eliminarBuff(this.buffs[i]);
+      }
+    }
+
 
   }
 
@@ -528,6 +551,30 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  comprobarObjetos(obj){
+    if(obj != undefined){
+      var casterObjeto = new THREE.Raycaster();
+      casterObjeto.set(obj.position, new THREE.Vector3(0, 0, 1));
+      casterObjeto.far = 1;
+      var objeto = casterObjeto.intersectObject(this.nave,true);
+      if(objeto.length > 0){
+        console.log("entra");
+        if(obj.getTipo() && this.nave.getVidasJugador() < 5){
+          this.nave.sumarVida();
+          console.log(this.nave.getVidasJugador())
+          document.getElementById(`vida${this.nave.getVidasJugador() - 1}`).style.visibility = 'visible';
+          this.eliminarBuff(obj);
+        }
+        else if(!obj.getTipo() && !this.nave.getDisparoDoble()){
+          this.nave.setDisparoDoble(true);
+          this.eliminarBuff(obj);
+        }
+
+        
+      }
+    }
+  }
+
   comprobarFinJuego(){
     //console.log(this.enemigos[10].position);
     if(this.enemigos.length == 0 && this.nave.getVidasJugador()>0){
@@ -563,7 +610,23 @@ class MyScene extends Physijs.Scene {
       console.log(vidas.innerHTML)
 
     }
+  }
 
+  spawnearBuff(enemigo){
+    var numero = Math.floor(Math.random() * 11);
+    if(numero < 2){
+      var buff = new Buff(true);
+      buff.position.set(enemigo.position.x,5,enemigo.position.z);
+      this.buffs.push(buff);
+      this.add(buff);
+    }
+
+    if(numero == 10){
+      var buff = new Buff(false);
+      buff.position.set(enemigo.position.x,5,enemigo.position.z);
+      this.buffs.push(buff);
+      this.add(buff);
+    }
   }
 
 
@@ -594,7 +657,7 @@ class MyScene extends Physijs.Scene {
       
       this.nave.update();
       
-      this.dispararLasers();
+      this.actualizarObjetos();
   
       this.ejecutarMovimiento();
       
@@ -620,11 +683,13 @@ class MyScene extends Physijs.Scene {
         }
         else if(this.oleada > 3){
           console.log("Enhorabuena, has compleado el juego");
+          this.limpiarRestos();
         }
         
       }
       else if(this.resultado == "Derrota"){
         console.log("Has perdido");
+        this.limpiarRestos();
       }
     }
     
