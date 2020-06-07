@@ -45,6 +45,10 @@ class Enemy extends THREE.Object3D{
         this.vidasEnemigo = this.vidasEnemigo - 1;
     }
 
+    getPosicionVictoria(){
+        return this.position.z > 0;
+    }
+
     movimiento(){
         this.position.z += 0.02;
         

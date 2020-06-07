@@ -108,6 +108,16 @@ class MyShip extends THREE.Object3D{
         }
     }
 
+    setVidas(vidas){
+        this.vidasJugador = vidas;
+    }
+
+    ponerEnPosicion(){
+        this.rotation.z = 0;
+        this.girada = false;
+        this.position.set(0,5,30);
+    }
+
     setDisparoDoble(disparo){
         this.disparoDoble = disparo;
     }

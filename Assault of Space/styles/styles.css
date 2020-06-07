@@ -14,3 +14,21 @@
     background-image: none;
 }
 
+
+.mensajes{
+    position: absolute;
+    width: 20%;
+    height: 20%;
+    max-width: 20%;
+    max-height: 20%;
+    display: block;
+    padding-left: 40%;
+    padding-top: 22%;
+    align-self: center;
+    display: block;
+    background: none;
+    background-image: none;
+    font-family: 'Courier New', Courier, monospace;
+    color: aliceblue;
+    text-align: center;
+}

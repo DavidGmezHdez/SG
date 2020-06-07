@@ -1,30 +1,15 @@
- 
-class MyScene extends Physijs.Scene {
+class MyScene extends THREE.Scene {
   constructor (unRendered,oleada) {
     super();
     
-    // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
-    //this.renderer = this.createRenderer(myCanvas);
-    
-    // Se añade a la gui los controles para manipular los elementos de esta clase
     this.gui = this.createGUI ();
 
-
-    
-    // Construimos los distinos elementos que tendremos en la escena
-    
-    // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
-    // Tras crear cada elemento se añadirá a la escena con   this.add(variable)
     this.createLights ();
-    
-    // Tendremos una cámara con un control de movimiento con el ratón
+
     this.createCamera (unRendered);
-    
-    // Creamos el escenario
+
     this.createEscenario ();
-    
-    // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
-    
+
     this.nave = new MyShip();
 
     this.add (this.nave);
@@ -44,20 +29,7 @@ class MyScene extends Physijs.Scene {
     this.juegoEmpezado = false;
     this.finJuego = false;
     this.resultado;
-
-
-    /*
-    var enemy = new Enemy(-20,-35);
-    enemy.position.set(-20,5,-35);
-    this.add(enemy);
-    this.enemigos.push(enemy)
-
-    var enemy = new Enemy(-12,-25);
-    enemy.position.set(-12,5,-25);
-    this.add(enemy);
-    this.enemigos.push(enemy)
-
-  */
+    this.mensaje = document.getElementById("mensaje");
   }
   
 
@@ -73,45 +45,9 @@ class MyScene extends Physijs.Scene {
     var look = new THREE.Vector3 (0,0,0);
     this.camera.lookAt(look);
     this.add (this.camera);
-    
-    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new THREE.TrackballControls (this.camera, unRendered.domElement);
-    // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
-    // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
-    
-    
-/*
-    // Para crear una cámara le indicamos
-    //   El ángulo del campo de visión en grados sexagesimales
-    //   La razón de aspecto ancho/alto
-    //   Los planos de recorte cercano y lejano
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    // También se indica dónde se coloca
-    this.camera.position.set (0, 0, 40);
-    // Y hacia dónde mira
-    var look = new THREE.Vector3 (0,0,0);
-    this.camera.lookAt(look);
-    this.add (this.camera);
-    
-    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new THREE.TrackballControls (this.camera, unRendered.domElement);
-    // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
-    // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
-    */
-    
   }
   
   createEscenario () {
-    // El suelo es un Mesh, necesita una geometría y un material.
-    
 
     var geometry = new THREE.BoxGeometry (200,-1,200);
     
@@ -122,12 +58,8 @@ class MyScene extends Physijs.Scene {
 
     var espacio = new THREE.Mesh (geometry, materialSpace);
 
-    
-    // Todas las figuras se crean centradas en el origen.
-    // El suelo lo bajamos la mitad de su altura para que el origen del mundo se quede en su lado superior
     espacio.y = -0.1;
     
-    // Que no se nos olvide añadirlo a la escena, que en este caso es  this
     this.add (espacio);
 
     this.borde1 = new Border();
@@ -154,15 +86,6 @@ class MyScene extends Physijs.Scene {
       this.axisOnOff = true;
       this.animacion = false;
     }
-
-    // Se crea una sección para los controles de esta clase
-    var folder = gui.addFolder ('Luz, Ejes y Animación');
-    
-    // Se le añade un control para la intensidad de la luz
-    folder.add (this.guiControls, 'lightIntensity', 0, 1, 0.1).name('Intensidad de la Luz : ');
-    
-    // Y otro para mostrar u ocultar los ejes
-    folder.add (this.guiControls, 'axisOnOff').name ('Mostrar ejes : ');
     
     return gui;
   }
@@ -199,6 +122,14 @@ class MyScene extends Physijs.Scene {
     this.camera.updateProjectionMatrix();
   }
   
+
+  /*
+  * CONTROLADORES DE TECLAS Y VENTANA
+  */
+
+  /*
+  * Función se comprueba cuando se rediemnsiona la ventana
+  */
   onWindowResize () {
     // Este método es llamado cada vez que el usuario modifica el tamapo de la ventana de la aplicación
     // Hay que actualizar el ratio de aspecto de la cámara
@@ -207,82 +138,57 @@ class MyScene extends Physijs.Scene {
     // Y también el tamaño del renderizador
     this.renderer.setSize (window.innerWidth, window.innerHeight);
   }
-
+  
+  /*
+  * Función se comprueba cuando se pulsa alguna tecla. Tiene que ver con el movimiento de la nave
+  */
   onKeyDown (event){
     var tecla = event.which || event.keyCode;
     this.keys[tecla] = true;
   }
 
+  /*
+  * Función se comprueba cuando se deja de pulsar alguna tecla
+  */
   onKeyUp (event){
     var tecla = event.which || event.keyCode;
     this.keys[tecla] = false;
 
   }
 
+  /*
+  * Función se comprueba cuando pulsa y deja de pulsar una tecla. Maneja la función de disparo, el botón de INICIO (INTRO) y el botón cuando se quiere recargar la partida.
+  */
   onKeyPress (event){
     var tecla = event.which || event.keyCode;
     this.keys[tecla] = true;
-    var pressed = false;
 
-    if( pressed === true ) { //Already pressed don't allow another press
-    
-    return false;
-    }
-    pressed = true;
-    setTimeout(function() { pressed = false }, 5000);
-    if(this.keys[32] && pressed)
+    if(this.keys[32])
       this.disparar(true);
     
     if(this.keys[13] && !this.juegoEmpezado && this.enemigosCargados){
       this.juegoEmpezado = true;
-      switch (this.oleada){
-        case 1:
-          setInterval(()=>this.disparar(false),5000);
-          break;
-  
-        case 2:
-          setInterval(()=>this.disparar(false),2000);
-          break;
-        case 3:
-          setInterval(()=>this.disparar(false),1000);
-          setInterval(()=>this.disparoBoss(false),2500);
-  
-      }
     }
+
+    if(this.keys[82] && this.finJuego)
+      this.volverInicio();
   }
 
-  crearLaser(fuente){
-    var geoCollider = new THREE.BoxGeometry ( 0.25 , 2 , 0.25);
-    var collider_material;
+  /*
+  * LASERES
+  */
 
-    if(fuente)
-    collider_material = Physijs.createMaterial(
-      new THREE.MeshLambertMaterial({ color: 0x088A29, opacity: 1.0, transparent: false }),
-      .9, // alta friccion
-      .0 // alto rebote
-    );
-    else
-      collider_material =  Physijs.createMaterial(
-        new THREE.MeshLambertMaterial({ color: 0xff0000, opacity: 1.0, transparent: false }),
-        .9, // alta friccion
-        .0 // alto rebote
-      );
-
-    var laser = new Physijs.BoxMesh(geoCollider,collider_material,0);
-    laser.rotation.x = Math.PI/2;
-    laser.colisionable = true
-
-    return laser;
-  }
-
+  /*
+  * Función se se se encarga de crear un nuevo laser y añadirlo a la escena en la posición del sujeto que dispara
+  * Se comprueba si el juego ha empezado y por parte del jugador si tiene disparo doble. Por parte del enemigo se comprueba que existe algun enemigo que puedas ser llamado
+  * a disparar y que no ha acabado el juego.
+  */
   disparar(fuente){
-
     if(this.juegoEmpezado){
-
       if(fuente){
         if(this.nave.getDisparoDoble()){
-          var laser1 = this.crearLaser(fuente);
-          var laser2 = this.crearLaser(fuente);
+          var laser1 = new Laser(fuente);
+          var laser2 = new Laser(fuente);
           laser1.position.set(this.nave.position.x + 3,this.nave.position.y,this.nave.position.z);
           laser2.position.set(this.nave.position.x - 3,this.nave.position.y,this.nave.position.z);
           this.laseresJugador.push(laser1);
@@ -291,7 +197,7 @@ class MyScene extends Physijs.Scene {
           this.add(laser2);
         }
         else{
-          var laser = this.crearLaser(fuente);
+          var laser = new Laser(fuente);
           laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
           this.laseresJugador.push(laser);
           this.add(laser);
@@ -301,7 +207,7 @@ class MyScene extends Physijs.Scene {
   
       else{
         if(this.enemigos.length > 0 && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
-          var laser = this.crearLaser(fuente);
+          var laser = new Laser(fuente);
           var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
           laser.position.set(enemigo.position.x,5,enemigo.position.z);
           this.laseresEnemigos.push(laser);
@@ -316,13 +222,16 @@ class MyScene extends Physijs.Scene {
 
   }
 
+  /*
+  * Función se se se encarga de crear un nuevo laser y añadirlo a la posición del boss, con la característica de que crea dos láseres y no uno.
+  * Tiene las mismas comprobaciones que la función anterior
+  */
   disparoBoss(){
-
     var boss;
     if(this.enemigos.find(element => element.boss) && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
       boss = this.enemigos.find(element => element.boss);
-      var laser = this.crearLaser(false);
-      var laser2 = this.crearLaser(false);
+      var laser = new Laser(false);
+      var laser2 = new Laser(false);
       
       laser.userData = 'enemigo';
       boss = this.enemigos.find(element => element.boss);
@@ -336,10 +245,15 @@ class MyScene extends Physijs.Scene {
       this.add(laser)
       this.add(laser2);
     }
-    
   }
 
+  /*
+  * FUNCIONES DE ELIMINACION
+  */
 
+  /*
+  * Elimina un laser tanto del array(en función de quien haya disparado) como de la escena
+  */
   eliminarLaser(laser,fuente){
     if(fuente){
       var index = this.laseresJugador.indexOf(laser)
@@ -354,6 +268,9 @@ class MyScene extends Physijs.Scene {
     this.remove(laser);
   }
 
+  /*
+  * Elimina un enemigo tanto del array como de la escena
+  */
   eliminarEnemigo(enemigo){
     this.spawnearBuff(enemigo);
     var index = this.enemigos.indexOf(enemigo);
@@ -362,10 +279,16 @@ class MyScene extends Physijs.Scene {
     this.remove(enemigo);
   }
 
+  /*
+  * Elimina al jugador de la escena
+  */
   eliminarJugador(){
     this.remove(this.nave);
   }
 
+  /*
+  * Elimina un buff tanto del array como de la escena
+  */
   eliminarBuff(buff){
     var index = this.buffs.indexOf(buff);
     this.buffs[index] = null;
@@ -373,6 +296,42 @@ class MyScene extends Physijs.Scene {
     this.remove(buff);
   }
 
+  /*
+  * Se encarga de eliminar los restos (laseres y objetos) al final de cada ronda, de manera que este empiece limpia. Además, pone a la nave en posición de salida.
+  */
+  limpiarRestos(){
+    if(this.laseresEnemigos.length >=0){
+      for(let i=0;i<this.laseresEnemigos.length;i++){
+        this.eliminarLaser(this.laseresEnemigos[i]);
+      }
+      //this.laseresEnemigos = [];
+    }
+
+    if(this.laseresJugador.length>=0){
+      for(let i=0;i<this.laseresJugador.length;i++){
+        this.eliminarLaser(this.laseresJugador[i]);
+      }
+      //this.laseresJugador = [];
+    }
+
+      
+    if(this.buffs.length>=0){
+      for(let i=0;i<this.buffs.length;i++){
+        this.eliminarBuff(this.buffs[i]);
+      }
+      //this.buffs = [];
+    }
+      
+    this.nave.ponerEnPosicion();
+  }
+
+  /*
+  * FUNCIONES DE MOVIMIENTO
+  */
+
+  /*
+  * Se encarga de moverse en función de la flecha que se esté presionando. Si no se presiona ninguna, pone recta la nave
+  */
   ejecutarMovimiento(){
     if(this.keys[37])
       this.nave.mover(true);
@@ -384,37 +343,26 @@ class MyScene extends Physijs.Scene {
       this.nave.ponerRecta();
   }
 
+  /*
+  * Se encarga de mover a los enemigos en la escena.
+  */
   ejecutarMovimientoEnemigos(){
     for(let i=0;i<this.enemigos.length;i++){
       this.enemigos[i].movimiento();
     }
   }
 
-  limpiarRestos(){
-      for(let i=0;i<this.laseresEnemigos.length;++i){
-        this.eliminarLaser(this.laseresEnemigos[i]);
-      }
-    
-      for(let i=0;i<this.laseresJugador.length;++i){
-        this.eliminarLaser(this.laseresJugador[i]);
-      }
 
-      for(let i=0;i<this.buffs.length;++i){
-        this.eliminarLaser(this.buffs[i]);
-      }
-    
+  /*
+  * FUNCIONES DE GENERACIÓN Y ACTUALIZACION
+  */
 
-      this.nave.position.set(0,5,30);
-      this.nave.rectificar();
-    
-
-    
-  }
-
+  /*
+  * Se encarga de generar las distintas oleadas. Primero limpia la escena y luego carga a los enemigos en función de la oleada. Además establece la secuencia de disparo de los enemigos
+  */
   generarOleada(numeroOleada){
 
     this.limpiarRestos();
-
 
     switch(numeroOleada){
       case 1:
@@ -472,16 +420,17 @@ class MyScene extends Physijs.Scene {
           setInterval(()=>this.disparoBoss(false),2500);
           break;
     }
-
-
-    
   }
 
+  /*
+  * Se encarga de actualizar la posición de los láseres y buffs a lo largo de la escena. Si estos superan un límite o chocan, se eliminan
+  */
   actualizarObjetos(){
     if(this.laseresJugador.length > 0){
       for(let i=0;i<this.laseresJugador.length;i++){
-        this.laseresJugador[i].__dirtyPosition = true;
-        this.laseresJugador[i].position.z-=1.5;
+        //this.laseresJugador[i].__dirtyPosition = true;
+        //this.laseresJugador[i].position.z-=1.5;
+        this.laseresJugador[i].update();
         this.comprobarEnemigos(this.laseresJugador[i]);
         if(this.laseresJugador[i].position.z < -70 && this.laseresJugador[i] != undefined)
           this.eliminarLaser(this.laseresJugador[i],true);
@@ -491,8 +440,9 @@ class MyScene extends Physijs.Scene {
 
     if(this.laseresEnemigos.length > 0){
       for(let i=0;i<this.laseresEnemigos.length;i++){
-        this.laseresEnemigos[i].__dirtyPosition = true;
-        this.laseresEnemigos[i].position.z+=1.5;
+        //this.laseresEnemigos[i].__dirtyPosition = true;
+        //this.laseresEnemigos[i].position.z+=1.5;
+        this.laseresEnemigos[i].update();
         this.comprobarVidas(this.laseresEnemigos[i]);
         if(this.laseresEnemigos[i].position.z > 40 && this.laseresEnemigos[i] != undefined)
           this.eliminarLaser(this.laseresEnemigos[i],false);
@@ -507,10 +457,20 @@ class MyScene extends Physijs.Scene {
           this.eliminarBuff(this.buffs[i]);
       }
     }
-
-
   }
 
+
+
+  /*
+  * FUNCIONES DE COMPROBACIÓN DE COLISIONES
+  */
+
+  
+  /*
+  * Se encarga de comprobar si los láseres del jugador dan en un enemigo.
+  * Se utiliza un raycaster para detectar la colisión
+  * Si ocurre, al enemigo se le resta una vida. Si la vida de algun enemigo llega a 0, este se elimina
+  */
   comprobarEnemigos(laser){
     if(laser != undefined){
       var casterJugador = new THREE.Raycaster();
@@ -532,8 +492,13 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  /*
+  * Se encarga de comprobar si los láseres del enemigo dan en el jugador.
+  * Se utiliza un raycaster para detectar la colisión
+  * Si ocurre, al jugador se le resta una vida. Si llega a 0, el jugador pierde.
+  * Las vidas se les van borrando ocultandose en el propio HTML.
+  */
   comprobarVidas(laser){
-    
     if(laser != undefined){
       var casterEnemigo = new THREE.Raycaster();
       casterEnemigo.set(laser.position, new THREE.Vector3(0, 0, 1));
@@ -544,13 +509,16 @@ class MyScene extends Physijs.Scene {
         if(this.nave.getVidasJugador() > 0){
           this.nave.eliminarVida();
           document.getElementById(`vida${this.nave.getVidasJugador()}`).style.visibility = 'hidden';
-          console.log(vidas.innerHTML);
         }
-        console.log(this.nave.getVidasJugador())
       }
     }
   }
 
+  /*
+  * Se encarga de comprobar si los objetos que sueltan los enemigos dan en el jugador
+  * Se utiliza un raycaster para detectar la colisión
+  * Si esto ocurre, en función del objeto el jugador gana una vida o consigue el cañón doble
+  */
   comprobarObjetos(obj){
     if(obj != undefined){
       var casterObjeto = new THREE.Raycaster();
@@ -575,6 +543,13 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  /*
+  * Se encarga de comprobar si el juego ha terminado
+  * El juego puede acabar de 3 maneras: 
+  *   El jugador acabando la oleada (si se pasa las 3 ha ganado definitivamente)
+  *   El jugador ha sufrido ataques de los enemigos y ha perdido todas las vidas (pierde definitivamente)
+  *   Los enemigos se han acercado mucho al jugador (pierde definitivamente)
+  */
   comprobarFinJuego(){
     //console.log(this.enemigos[10].position);
     if(this.enemigos.length == 0 && this.nave.getVidasJugador()>0){
@@ -587,41 +562,47 @@ class MyScene extends Physijs.Scene {
       this.resultado = "Derrota";
       this.eliminarJugador()
     }
-    else if(this.enemigos.length > 0){
-      for(let i=0;i<this.enemigos[i].length;++i){
+    
+    if(this.enemigos.length > 0){
+      for(var i=0;i<this.enemigos.length;i++){
         if(this.enemigos[i].position.z > 25){
           this.finJuego = true;
           this.resultado = "Derrota";
-          this.eliminarJugador();
+          this.eliminarJugador()
         }
       }
     }
   }
 
-  mostrarVidas(){
+  /*
+  * FUNCIONES AUXILIARES
+  */
 
+  /*
+  * Se encarga de mostrar las vidas al inicio de la partida, es decir, rellena el HTML de las vidas
+  */
+  mostrarVidas(){
     if(this.oleada == 1){
       var vidas = document.getElementById("vidas");
       console.log(vidas)
-  
-      for(let i=0;i<this.nave.getVidasJugador();++i){
-        vidas.innerHTML += `<img id="vida${i}"src="imgs/vida.png"> <br>`
-      }
-      console.log(vidas.innerHTML)
-
+      vidas.innerHTML = `<img id="vida${0}"src="imgs/vida.png"> <br><img id="vida${1}"src="imgs/vida.png"> <br><img id="vida${2}"src="imgs/vida.png"> <br><img id="vida${3}"src="imgs/vida.png"> <br><img id="vida${4}"src="imgs/vida.png"> <br>`;
     }
   }
 
+  /*
+  * Se encarga suministrar al jugador con un buff cuando acabe con un enemigo. No ocurre siempre
+  * Es completamente aleatorio: Tienes un 15% de probabilidades que te toque una vida y un 5% que te toque el cañón doble.
+  */
   spawnearBuff(enemigo){
-    var numero = Math.floor(Math.random() * 11);
-    if(numero < 2){
+    var numero = Math.floor(Math.random() * 101);
+    if(numero < 15 ){
       var buff = new Buff(true);
       buff.position.set(enemigo.position.x,5,enemigo.position.z);
       this.buffs.push(buff);
       this.add(buff);
     }
 
-    if(numero == 10){
+    if(numero >= 95 && !this.nave.getDisparoDoble()){
       var buff = new Buff(false);
       buff.position.set(enemigo.position.x,5,enemigo.position.z);
       this.buffs.push(buff);
@@ -629,32 +610,56 @@ class MyScene extends Physijs.Scene {
     }
   }
 
+  /*
+  * Se encarga de volver todo al estado inicial por si el jugador quiere jugar otra partida si ha perdido o ganado.
+  */
+  volverInicio(){
+    this.limpiarRestos();
+    this.add(this.nave);
+    this.nave.setVidas(5);
+    this.nave.setDisparoDoble(false);
+    for(let i=0;i<this.enemigos.length;i++){
+      console.log(this.enemigos[i])
+      this.eliminarEnemigo(this.enemigos[i]);
+    }
+    //this.enemigos = [];
+    this.enemigosCargados = false;
+    this.oleada = 1;
+    this.juegoEmpezado = false;
+    this.finJuego = false;
+  }
 
 
-
-  update () {
-    // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
-    
-    // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
-    // Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
-    //requestAnimationFrame(() => this.update())
-
-    // Se actualizan los elementos de la escena para cada frame
-    // Se actualiza la intensidad de la luz con lo que haya indicado el usuario en la gui
-    this.spotLight.intensity = this.guiControls.lightIntensity;
-    
-    // Se actualiza la posición de la cámara según su controlador
-    this.cameraControl.update();
-    
-    // Se actualiza el resto del modelo
-    
+  /*
+  * FUNCION PRINCIPAL
+  * Se encarga de llevar a cabo la base del juego
+  */
+  jugar(){
+    //Se comprueba que si el juego no ha empezado (bien porque es el principio o porque ha acabdo una ronda) y no hay ningún enemigo cargado
+    // Si es así, se crea la oleada de los enemigos y se muestran las vidas y una serie de mensajes en función de la oleada
     if(!this.juegoEmpezado && !this.enemigosCargados){
       this.generarOleada(this.oleada);
       this.mostrarVidas();
+
+      if(this.oleada == 1){
+        this.mensaje.innerHTML = '<h2>Bienvenido a Assault of Space</h2><h2>OLEADA 1</h2> <p>Derrota a todos los enemigos de las distintas oleadas y evita que te disparen o se te acerquen. Cuidado porque los enemigos tienen vidas.</p><p>Muevete con las flechas y dispara con el espacio</p><p>Recoge al abatir un enemigo las vidas o el poderoso cañón doble</p><p>Pulsa INTRO para empezar</p>';
+      }
+      else if(this.oleada == 2){
+        this.mensaje.innerHTML = '<h2 style="padding-top:60%">OLEADA 2</h2><p>Pulsa INTRO para empezar</p>'
+      }
+      else if(this.oleada == 3){
+        this.mensaje.innerHTML = '<h2 style="padding-top:40%">OLEADA 3</h2><p>Pulsa INTRO para empezar</p>'
+      }
     }
 
+    // Si por el contrario el juego si ha empezado (es decir, los enemigos se han cargado) y no hemos llegado a una etapa de fin de juego, se realizan todos los updates
+    // de los objetos en la escena (movimiento de la nave, enemigos, disparos, etc).
+    // Además comprobamos en todo momento si hemos llegado a un estado de fin de juego.
     else if(this.juegoEmpezado && !this.finJuego){
       
+      if(this.mensaje.innerHTML!=""){
+        this.mensaje.innerHTML = "";
+      }
       this.nave.update();
       
       this.actualizarObjetos();
@@ -662,40 +667,47 @@ class MyScene extends Physijs.Scene {
       this.ejecutarMovimiento();
       
       this.ejecutarMovimientoEnemigos();
-
-      //this.mostrarVidas();
       
       //Comprobamos el estado del juego
       this.comprobarFinJuego();
 
-      // Se le pide al motor de física que actualice las figuras según sus leyes
-      this.simulate();
     }
 
+    // Si hemos llegadoal estado de fin de juego con el juego empezado, comprobamos la oleada
+    // Si la oleada era inferior a 3, se carga la siguiente (siendo la ultima la 3)
+    // Si se ha llegado a la 3, se señala que se ha completado el juego
     else if(this.finJuego){
       if(this.resultado == "Victoria"){
         if(this.oleada < 3){
-          console.log("Has ganado, cargando siguiente oleada");
           this.oleada++;
           this.enemigosCargados = false;
           this.juegoEmpezado = false;
           this.finJuego = false;
         }
-        else if(this.oleada > 3){
-          console.log("Enhorabuena, has compleado el juego");
+        else if(this.oleada >= 3){
+          if(this.mensaje.innerHTML==""){
+            this.mensaje.innerHTML = '<h2 style="padding-top:40%">¡Enhorabuena, has compleado el juego! Pulsa R si quieres jugar de nuevo</h2>'
+          }
           this.limpiarRestos();
         }
         
       }
+      // Si por el contrario el jugador ha perdido, se le notifica y se le avisa que puede reintentarlo con la tecla R
+      // Además, se eliminan los restos de la escena
       else if(this.resultado == "Derrota"){
-        console.log("Has perdido");
+        if(this.mensaje.innerHTML==""){
+          this.mensaje.innerHTML = '<h2 style="padding-top:40%">Has perdido. Pulsa R si quieres volverlo a intentar</h2>'
+        }
         this.limpiarRestos();
       }
     }
+  }
+
+
+  // Llamamos al metodo jugar 
+  update () {
+    this.spotLight.intensity = this.guiControls.lightIntensity;
     
-
-    // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
-    //this.renderer.render (this, this.getCamera());
-
+    this.jugar()
   }
 }
