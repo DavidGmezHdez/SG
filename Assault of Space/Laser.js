@@ -1,5 +1,8 @@
 class Laser extends THREE.Object3D
 {
+  /**
+  * Constructor del objeto
+  */
     constructor(fuente) {
       super();
 
@@ -22,7 +25,9 @@ class Laser extends THREE.Object3D
 
     }
     
-    
+  /**
+  * Actualiza la posición del laser (true es disparo del jugador, false del enemigo)
+  */
     update(){
         if(this.fuente)
           this.position.z-=1.5;

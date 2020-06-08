@@ -1,5 +1,8 @@
 class Buff extends THREE.Object3D
-{
+{    
+  /**
+  * Constructor del objeto
+  */
     constructor(fuente) {
       super();
 
@@ -41,11 +44,17 @@ class Buff extends THREE.Object3D
       }
 
     }
-    
+
+    /**
+     * Devuelve el tipo del buff: true es una vida y false el doble cañon
+     */
     getTipo(){
         return this.tipo;
     }
     
+    /**
+     * Actualiza la posición del buff para que se acerque al jugador
+    */
     update(){
         this.position.z+=0.15;
         this.rotation.y+= 0.15;

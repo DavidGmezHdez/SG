@@ -272,11 +272,18 @@ class MyScene extends THREE.Scene {
   * Elimina un enemigo tanto del array como de la escena
   */
   eliminarEnemigo(enemigo){
-    this.spawnearBuff(enemigo);
+    if(!this.finJuego)
+      this.spawnearBuff(enemigo);
+
     var index = this.enemigos.indexOf(enemigo);
-    this.enemigos[index] = null;
+    console.log(enemigo)
+    console.log(this.enemigos[index])
+    
+    //this.enemigos[index]
     this.enemigos.splice(index,1);
+    
     this.remove(enemigo);
+    console.log(this.enemigos[index]);
   }
 
   /*
@@ -302,24 +309,24 @@ class MyScene extends THREE.Scene {
   limpiarRestos(){
     if(this.laseresEnemigos.length >=0){
       for(let i=0;i<this.laseresEnemigos.length;i++){
-        this.eliminarLaser(this.laseresEnemigos[i]);
+        this.remove(this.laseresEnemigos[i]);
       }
-      //this.laseresEnemigos = [];
+      this.laseresEnemigos = [];
     }
 
     if(this.laseresJugador.length>=0){
       for(let i=0;i<this.laseresJugador.length;i++){
-        this.eliminarLaser(this.laseresJugador[i]);
+        this.remove(this.laseresJugador[i]);
       }
-      //this.laseresJugador = [];
+      this.laseresJugador = [];
     }
 
       
     if(this.buffs.length>=0){
       for(let i=0;i<this.buffs.length;i++){
-        this.eliminarBuff(this.buffs[i]);
+        this.remove(this.buffs[i]);
       }
-      //this.buffs = [];
+      this.buffs = [];
     }
       
     this.nave.ponerEnPosicion();
@@ -368,9 +375,9 @@ class MyScene extends THREE.Scene {
       case 1:
         for(let i=-20;i<=20;i+=8){
           for(let j = -35;j<=-15;j+=10){
-            var enemy = new Enemy(i,j);
+            var enemy = new Minion(i,j);
             enemy.position.set(i,5,j);
-            this.add(enemy);
+            //this.add(enemy);
             this.enemigos.push(enemy)
           }
         }
@@ -380,9 +387,9 @@ class MyScene extends THREE.Scene {
       case 2:
         for(let i=-20;i<=20;i+=8){
           for(let j= -35;j<=-5;j+=10){
-            var enemy = new Enemy(i,j);
+            var enemy = new Minion(i,j);
             enemy.position.set(i,5,j);
-            this.add(enemy);
+            //this.add(enemy);
             this.enemigos.push(enemy)
           }
         }
@@ -394,9 +401,9 @@ class MyScene extends THREE.Scene {
 
           for(let i=-20;i<=-10;i+=8){
             for(let j= -35;j<=-5;j+=10){
-              var enemy = new Enemy(i,j);
+              var enemy = new Minion(i,j);
               enemy.position.set(i,5,j);
-              this.add(enemy);
+              //this.add(enemy);
               this.enemigos.push(enemy)
             }
           }
@@ -408,18 +415,24 @@ class MyScene extends THREE.Scene {
 
           for(let i=10;i<=20;i+=8){
             for(let j= -35;j<=-5;j+=10){
-              var enemy = new Enemy(i,j);
+              var enemy = new Minion(i,j);
               enemy.position.set(i,5,j);
-              this.add(enemy);
+              //this.add(enemy);
               this.enemigos.push(enemy)
             }
           }
           
-          this.enemigosCargados = true;
           setInterval(()=>this.disparar(false),1000);
           setInterval(()=>this.disparoBoss(false),2500);
           break;
     }
+    for(var i=0;i<this.enemigos.length;i++){
+      this.add(this.enemigos[i]);
+    }
+    this.enemigosCargados = true;
+
+
+    
   }
 
   /*
@@ -480,7 +493,6 @@ class MyScene extends THREE.Scene {
   
       if(objetos.length>0){
         var enemigo = objetos[0].object.parent.parent;
-        console.log(enemigo);
         this.eliminarLaser(laser,true);
       
         if(enemigo.getVidasEnemigo() > 0)
@@ -526,10 +538,8 @@ class MyScene extends THREE.Scene {
       casterObjeto.far = 1;
       var objeto = casterObjeto.intersectObject(this.nave,true);
       if(objeto.length > 0){
-        console.log("entra");
         if(obj.getTipo() && this.nave.getVidasJugador() < 5){
           this.nave.sumarVida();
-          console.log(this.nave.getVidasJugador())
           document.getElementById(`vida${this.nave.getVidasJugador() - 1}`).style.visibility = 'visible';
           this.eliminarBuff(obj);
         }
@@ -584,7 +594,6 @@ class MyScene extends THREE.Scene {
   mostrarVidas(){
     if(this.oleada == 1){
       var vidas = document.getElementById("vidas");
-      console.log(vidas)
       vidas.innerHTML = `<img id="vida${0}"src="imgs/vida.png"> <br><img id="vida${1}"src="imgs/vida.png"> <br><img id="vida${2}"src="imgs/vida.png"> <br><img id="vida${3}"src="imgs/vida.png"> <br><img id="vida${4}"src="imgs/vida.png"> <br>`;
     }
   }
@@ -618,10 +627,24 @@ class MyScene extends THREE.Scene {
     this.add(this.nave);
     this.nave.setVidas(5);
     this.nave.setDisparoDoble(false);
+
+    console.log(this.enemigos);
     for(let i=0;i<this.enemigos.length;i++){
-      console.log(this.enemigos[i])
-      this.eliminarEnemigo(this.enemigos[i]);
+      //var index = this.enemigos.indexOf(enemigo);
+      //console.log(enemigo)
+      //console.log(this.enemigos[index])
+      
+      //this.enemigos[index]
+      //this.enemigos.splice(index,1);
+      //this.enemigos[i].geometry.disposse();
+      //this.enemigos[i].material.disposse();
+      this.remove(this.enemigos[i]);
+      //console.log(this.enemigos[index]); 
     }
+
+    this.enemigos=[];
+    //this.enemigos = [];
+    console.log(this.enemigos.length)
     //this.enemigos = [];
     this.enemigosCargados = false;
     this.oleada = 1;

@@ -1,78 +1,46 @@
  
 class Enemy extends THREE.Object3D{
-    constructor(x,z) {
+    /**
+     * Constructor del objeto
+    */
+    constructor() {
         super();
-        
-
-
-        this.x = x, this.z = z;
-        var objectLoader = new THREE.OBJLoader();
+        this.objectLoader = new THREE.OBJLoader();
         this.enemy;
         var that = this;
-        this.derecha = true;
-        
-
-        this.vidasEnemigo = 3;
-
-        
-        objectLoader.load('models/enemigo/SmallSpaceFighter.obj',function(object){
-            that.enemy = object;
-            that.enemy.scale.set(0.9,0.9,0.9);
-            that.enemy.rotation.y = Math.PI;
-            that.add(that.enemy);
-        },null,null);
-        this.topeDerecha = x + 5;
-        this.topeIzquierda = x - 5;
+        this.vidasEnemigo;
     }
 
-    getX(){
-        return this.enemy.position.x;
-    }
-
-    getZ(){
-        return this.enemy.position.z;
-    }
-
-    getCollider(){
-        return this.collider;
-    }
-
+    /**
+     * Devuelve el número de vidas del enemigo
+     */
     getVidasEnemigo(){
         return this.vidasEnemigo;
     }
 
+    /**
+     * Le resta una vida al enemigo
+     */
     eliminarVida(){
         this.vidasEnemigo = this.vidasEnemigo - 1;
     }
 
+    /**
+     * Comprueba si ha llegado a la posicion para que el jugador pierda
+     */
     getPosicionVictoria(){
         return this.position.z > 0;
     }
 
+    /**
+     * Se encarga de realizar el movimiento.
+     * Siempre se mueve en diagonal
+     * Comprueba los topes de izquierda y derecha propios de su posición
+     */
     movimiento(){
-        this.position.z += 0.02;
-        
-        if(this.derecha){
-            if(this.position.x < this.topeDerecha)
-                this.position.x += 0.1;
-            else if(this.position.x >= this.topeDerecha)
-                this.derecha = false;
-        }
-        else{
-            if(this.position.x > this.topeIzquierda)
-                this.position.x -= 0.1;
-                else if(this.position.x <= this.topeIzquierda)
-                this.derecha = true;
-        }
-
+    
     }
 
-
-        
-    update () {
-
-
-    }
   }
   
   

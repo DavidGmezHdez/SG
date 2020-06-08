@@ -1,5 +1,8 @@
  
 class MyShip extends THREE.Object3D{
+    /**
+     * Constructor del objeto
+     */
     constructor() {
         super();
         
@@ -44,11 +47,18 @@ class MyShip extends THREE.Object3D{
         
     }
 
-
+    /**
+     * Devuelve el collider de la nave para las colisiones
+     */
     getNave(){
         return this.collider;
     }
 
+    /**
+     * @param {boolean} direccion 
+     *  Se encarga de mover la nave en función de las teclas pulsadas 
+     * (si direccion es true mueve a la izquierda y si es false a la derecha)
+     */
     mover(direccion){
         
         if(direccion){
@@ -65,6 +75,11 @@ class MyShip extends THREE.Object3D{
         }
     }
 
+    /**
+     * @param {boolean} direccion 
+     * Se encarga de girar la nave en función de la dirección
+     * (si direccion es true gira a la izquierda y si es false a la derecha)
+     */
     giroNave(direccion){
         if(!direccion){
             if(this.rotation.z > -1){
@@ -81,10 +96,17 @@ class MyShip extends THREE.Object3D{
         
     }
 
+    /**
+     * Si es llamada, pone rectitud a true para que la nave se ponga recta en cuanto a rotación
+     */
     ponerRecta(){
         this.rectitud = true;
     }
 
+    /**
+     * Se encarga de rectificar la posición de la nave, poniendola recta en función del giro
+     * Se usa cuando no hay nadie pulsando las teclas de movimiento, poniendose recta sola
+     */
     rectificar(){
         if(this.rotation.z>0)
             this.rotation.z -=0.25;
@@ -94,44 +116,68 @@ class MyShip extends THREE.Object3D{
             this.girada = false;
     }
 
+    /**
+     * Devuelve las vidas del jugador 
+     */
     getVidasJugador(){
         return this.vidasJugador;
     }
 
+    /**
+     * Elimina una vida del jugador
+     */
     eliminarVida(){
         this.vidasJugador = this.vidasJugador - 1;
     }
 
+    /**
+     * Suma una vida al jugador, si este tiene menos de 5 vidas
+     */
     sumarVida(){
         if(this.vidasJugador < 5){
             this.vidasJugador++;
         }
     }
 
+    /**
+     * Setter de las vidas del jugador
+     * @param {int} vidas 
+     */
     setVidas(vidas){
         this.vidasJugador = vidas;
     }
 
+    /**
+     * Pone a la nave en posición de inicio
+     */
     ponerEnPosicion(){
         this.rotation.z = 0;
         this.girada = false;
         this.position.set(0,5,30);
     }
 
+    /**
+     * Setter para el disparo doble
+     * @param {boolean} disparo 
+     */
     setDisparoDoble(disparo){
         this.disparoDoble = disparo;
     }
 
+    /**
+     * Devuelve el estado del disparo doble (true lo tienes activo, false no)
+     */
     getDisparoDoble(){
         return this.disparoDoble;
     }
-        
+     
+    /**
+     * Actualiza el estado para que si nadie está moviendo la nave esta se ponga recta
+     */
     update () {
         if(this.rectitud && this.girada){
             this.rectificar();
         }
-
-        //this.addEventListener('collision',this.manejarColisiones());
     }
   }
   
