@@ -538,17 +538,8 @@ class MyScene extends THREE.Scene {
       casterObjeto.far = 1;
       var objeto = casterObjeto.intersectObject(this.nave,true);
       if(objeto.length > 0){
-        if(obj.getTipo() && this.nave.getVidasJugador() < 5){
-          this.nave.sumarVida();
-          document.getElementById(`vida${this.nave.getVidasJugador() - 1}`).style.visibility = 'visible';
-          this.eliminarBuff(obj);
-        }
-        else if(!obj.getTipo() && !this.nave.getDisparoDoble()){
-          this.nave.setDisparoDoble(true);
-          this.eliminarBuff(obj);
-        }
-
-        
+        if(obj.aplicarBuff(this.nave))
+          this.eliminarBuff(obj);     
       }
     }
   }
@@ -605,14 +596,14 @@ class MyScene extends THREE.Scene {
   spawnearBuff(enemigo){
     var numero = Math.floor(Math.random() * 101);
     if(numero < 15 ){
-      var buff = new Buff(true);
+      var buff = new Vida();
       buff.position.set(enemigo.position.x,5,enemigo.position.z);
       this.buffs.push(buff);
       this.add(buff);
     }
 
     if(numero >= 95 && !this.nave.getDisparoDoble()){
-      var buff = new Buff(false);
+      var buff = new CanonDoble();
       buff.position.set(enemigo.position.x,5,enemigo.position.z);
       this.buffs.push(buff);
       this.add(buff);
@@ -630,22 +621,10 @@ class MyScene extends THREE.Scene {
 
     console.log(this.enemigos);
     for(let i=0;i<this.enemigos.length;i++){
-      //var index = this.enemigos.indexOf(enemigo);
-      //console.log(enemigo)
-      //console.log(this.enemigos[index])
-      
-      //this.enemigos[index]
-      //this.enemigos.splice(index,1);
-      //this.enemigos[i].geometry.disposse();
-      //this.enemigos[i].material.disposse();
       this.remove(this.enemigos[i]);
-      //console.log(this.enemigos[index]); 
     }
 
     this.enemigos=[];
-    //this.enemigos = [];
-    console.log(this.enemigos.length)
-    //this.enemigos = [];
     this.enemigosCargados = false;
     this.oleada = 1;
     this.juegoEmpezado = false;
