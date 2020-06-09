@@ -36,7 +36,6 @@ class MyShip extends THREE.Object3D{
             objectLoader.load('models/arc/ARC170.obj',function(object){
                 that.nave = object;
                 that.nave.scale.set(0.005,0.005,0.005);
-                that.nave.material = materials;
                 that.collider.add(that.nave);
                 that.add(that.collider);
             },null,null);

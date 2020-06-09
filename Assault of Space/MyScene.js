@@ -187,8 +187,8 @@ class MyScene extends THREE.Scene {
     if(this.juegoEmpezado){
       if(fuente){
         if(this.nave.getDisparoDoble()){
-          var laser1 = new Laser(fuente);
-          var laser2 = new Laser(fuente);
+          var laser1 = new LaserJugador(fuente);
+          var laser2 = new LaserJugador(fuente);
           laser1.position.set(this.nave.position.x + 3,this.nave.position.y,this.nave.position.z);
           laser2.position.set(this.nave.position.x - 3,this.nave.position.y,this.nave.position.z);
           this.laseresJugador.push(laser1);
@@ -197,7 +197,7 @@ class MyScene extends THREE.Scene {
           this.add(laser2);
         }
         else{
-          var laser = new Laser(fuente);
+          var laser = new LaserJugador(fuente);
           laser.position.set(this.nave.position.x,this.nave.position.y,this.nave.position.z);
           this.laseresJugador.push(laser);
           this.add(laser);
@@ -207,7 +207,7 @@ class MyScene extends THREE.Scene {
   
       else{
         if(this.enemigos.length > 0 && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
-          var laser = new Laser(fuente);
+          var laser = new LaserEnemigo(fuente);
           var enemigo = this.enemigos[Math.floor(Math.random() * this.enemigos.length)];
           laser.position.set(enemigo.position.x,5,enemigo.position.z);
           this.laseresEnemigos.push(laser);
@@ -230,8 +230,8 @@ class MyScene extends THREE.Scene {
     var boss;
     if(this.enemigos.find(element => element.boss) && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
       boss = this.enemigos.find(element => element.boss);
-      var laser = new Laser(false);
-      var laser2 = new Laser(false);
+      var laser = new LaserEnemigo(false);
+      var laser2 = new LaserEnemigo(false);
       
       laser.userData = 'enemigo';
       boss = this.enemigos.find(element => element.boss);
