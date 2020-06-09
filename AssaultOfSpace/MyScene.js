@@ -194,7 +194,11 @@ class MyScene extends THREE.Scene {
           this.laseresJugador.push(laser1);
           this.laseresJugador.push(laser2);
           this.add(laser1);
+          
+          var audio = new THREE.Audio('./sounds/disparoJugador.mp3');
+          audio.play();
           this.add(laser2);
+          audio.play();
         }
         else{
           var laser = new LaserJugador(fuente);
