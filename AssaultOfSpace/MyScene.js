@@ -29,6 +29,7 @@ class MyScene extends THREE.Scene {
     this.juegoEmpezado = false;
     this.finJuego = false;
     this.resultado;
+    this.intervalo;
     this.mensaje = document.getElementById("mensaje");
   }
   
@@ -194,11 +195,7 @@ class MyScene extends THREE.Scene {
           this.laseresJugador.push(laser1);
           this.laseresJugador.push(laser2);
           this.add(laser1);
-          
-          var audio = new THREE.Audio('./sounds/disparoJugador.mp3');
-          audio.play();
           this.add(laser2);
-          audio.play();
         }
         else{
           var laser = new LaserJugador(fuente);
@@ -232,13 +229,11 @@ class MyScene extends THREE.Scene {
   */
   disparoBoss(){
     var boss;
-    if(this.enemigos.find(element => element.boss) && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
-      boss = this.enemigos.find(element => element.boss);
-      var laser = new LaserEnemigo(false);
-      var laser2 = new LaserEnemigo(false);
+    if(this.enemigos.find(element => element.es_boss) && this.juegoEmpezado && this.nave.getVidasJugador() > 0){
       
-      laser.userData = 'enemigo';
-      boss = this.enemigos.find(element => element.boss);
+      boss = this.enemigos.find(element => element.es_boss);
+      var laser = new LaserEnemigo();
+      var laser2 = new LaserEnemigo();
   
       laser.position.set(boss.position.x+4,5,boss.position.z);
       laser2.position.set(boss.position.x-4,5,boss.position.z);
@@ -280,14 +275,9 @@ class MyScene extends THREE.Scene {
       this.spawnearBuff(enemigo);
 
     var index = this.enemigos.indexOf(enemigo);
-    console.log(enemigo)
-    console.log(this.enemigos[index])
-    
-    //this.enemigos[index]
     this.enemigos.splice(index,1);
     
     this.remove(enemigo);
-    console.log(this.enemigos[index]);
   }
 
   /*
@@ -381,24 +371,26 @@ class MyScene extends THREE.Scene {
           for(let j = -35;j<=-15;j+=10){
             var enemy = new Minion(i,j);
             enemy.position.set(i,5,j);
-            //this.add(enemy);
             this.enemigos.push(enemy)
           }
         }
         this.enemigosCargados = true;
-        setInterval(()=>this.disparar(false),5000);
+        clearInterval(this.intervalo)
+        this.intervalo = setInterval(()=>this.disparar(false),5000);
+        
+
         break;
       case 2:
         for(let i=-20;i<=20;i+=8){
           for(let j= -35;j<=-5;j+=10){
             var enemy = new Minion(i,j);
             enemy.position.set(i,5,j);
-            //this.add(enemy);
             this.enemigos.push(enemy)
           }
         }
         this.enemigosCargados = true;
-        setInterval(()=>this.disparar(false),2000);
+        clearInterval(this.intervalo)
+        this.intervalo = setInterval(()=>this.disparar(false),2000);
         break;
 
         case 3:
@@ -407,27 +399,24 @@ class MyScene extends THREE.Scene {
             for(let j= -35;j<=-5;j+=10){
               var enemy = new Minion(i,j);
               enemy.position.set(i,5,j);
-              //this.add(enemy);
               this.enemigos.push(enemy)
             }
           }
           var boss = new Boss(0,-20);
           boss.position.set(0,8,-20);
           this.add(boss);
-          console.log(boss);
           this.enemigos.push(boss);
 
           for(let i=10;i<=20;i+=8){
             for(let j= -35;j<=-5;j+=10){
               var enemy = new Minion(i,j);
               enemy.position.set(i,5,j);
-              //this.add(enemy);
               this.enemigos.push(enemy)
             }
           }
-          
-          setInterval(()=>this.disparar(false),1000);
-          setInterval(()=>this.disparoBoss(false),2500);
+          clearInterval(this.intervalo)
+          this.intervalo = setInterval(()=>this.disparar(false),1000);
+          setInterval(()=>this.disparoBoss(false),1000);
           break;
     }
     for(var i=0;i<this.enemigos.length;i++){
@@ -556,7 +545,6 @@ class MyScene extends THREE.Scene {
   *   Los enemigos se han acercado mucho al jugador (pierde definitivamente)
   */
   comprobarFinJuego(){
-    //console.log(this.enemigos[10].position);
     if(this.enemigos.length == 0 && this.nave.getVidasJugador()>0){
       this.finJuego = true;
       this.resultado = "Victoria";
@@ -623,7 +611,6 @@ class MyScene extends THREE.Scene {
     this.nave.setVidas(5);
     this.nave.setDisparoDoble(false);
 
-    console.log(this.enemigos);
     for(let i=0;i<this.enemigos.length;i++){
       this.remove(this.enemigos[i]);
     }
